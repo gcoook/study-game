@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>学习闯关 - 游戏化学习反馈系统</title>
+    <!-- PWA配置 -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23000' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
     <!-- 引入样式文件 -->
     <link rel="stylesheet" href="style.css">
+    <!-- Service Worker注册 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW注册成功'))
+                .catch(err => console.log('SW注册失败:', err));
+        }
+    </script>
 </head>
 <body>
 
@@ -77,87 +91,58 @@
             <!-- Tab1: 首页 - 今日概览 -->
             <!-- ======================================== -->
             <section id="tab-home" class="tab-content active">
-                <!-- 排名卡片 -->
-                <div class="card rank-card">
-                    <div class="card-label">当前全省排名</div>
-                    <div class="rank-display">
-                        <span id="current-rank" class="rank-number">--</span>
-                        <span id="rank-change" class="rank-change"></span>
-                    </div>
-                    <div class="rank-bar">
-                        <div id="rank-progress" class="rank-progress" style="width: 0%"></div>
-                    </div>
-                    <div class="rank-info">
-                        <span>全省133,279人</span>
-                        <span id="rank-percentile">前 --%</span>
-                    </div>
+                <!-- 顶部：排名（简洁显示） -->
+                <div class="header-rank">
+                    <span class="header-rank-label">全省排名</span>
+                    <span id="current-rank" class="header-rank-number">--</span>
+                    <span id="rank-percentile" class="header-rank-percent">前 --%</span>
                 </div>
 
-                <!-- 今日数据概览 -->
-                <div class="stats-grid">
-                    <!-- 今日XP -->
-                    <div class="stat-item">
-                        <div class="stat-icon xp-icon">&#9889;</div>
-                        <div class="stat-value" id="today-xp">0</div>
-                        <div class="stat-label">今日经验</div>
+                <!-- 中间：今日待办（最大区域） -->
+                <div class="card todo-card main-todo">
+                    <div class="todo-header">
+                        <span class="todo-title">&#128221; 今日待办</span>
+                        <span class="todo-count" id="todo-count">0 个任务</span>
                     </div>
-                    <!-- 总XP -->
-                    <div class="stat-item">
-                        <div class="stat-icon total-icon">&#127942;</div>
-                        <div class="stat-value" id="total-xp">0</div>
-                        <div class="stat-label">总经验值</div>
-                    </div>
-                    <!-- 连胜天数 -->
-                    <div class="stat-item">
-                        <div class="stat-icon streak-icon">&#128293;</div>
-                        <div class="stat-value" id="streak-days">0</div>
-                        <div class="stat-label">连胜天数</div>
-                    </div>
-                    <!-- 今日完成任务数 -->
-                    <div class="stat-item">
-                        <div class="stat-icon task-icon">&#9989;</div>
-                        <div class="stat-value" id="today-tasks">0</div>
-                        <div class="stat-label">今日任务</div>
-                    </div>
-                </div>
-
-                <!-- 排名变动趋势小图 -->
-                <div class="card trend-card">
-                    <div class="card-label">排名变动趋势（最近7天）</div>
-                    <div class="trend-chart" id="home-trend-chart">
-                        <!-- JS会在这里动态绘制SVG折线图 -->
-                    </div>
-                </div>
-
-                <!-- 每日结算倒计时 -->
-                <div class="card countdown-card" id="countdown-card">
-                    <div class="countdown-icon">&#9200;</div>
-                    <div class="countdown-text">
-                        <div class="countdown-title">距离结算</div>
-                        <div id="countdown-time" class="countdown-time">--:--:--</div>
-                    </div>
-                    <div class="countdown-status" id="countdown-status">正常</div>
-                </div>
-
-                <!-- 今日加成提示 -->
-                <div class="card bonus-card" id="bonus-card">
-                    <div class="bonus-icon">&#9889;</div>
-                    <div class="bonus-text">
-                        <div class="bonus-title">今日加成</div>
-                        <div id="bonus-desc" class="bonus-desc">连胜0天，加成 x1.0</div>
-                    </div>
-                </div>
-
-                <!-- 未做任务清单 -->
-                <div class="card todo-card" id="todo-card">
-                    <div class="card-label">&#128221; 今日待办</div>
-                    <div id="todo-list" class="todo-list">
+                    <div id="todo-list" class="todo-list main-todo-list">
                         <!-- JS动态生成未做任务列表 -->
                     </div>
                     <div id="todo-empty" class="todo-empty" style="display: none;">
-                        <span>&#127881;</span> 太棒了！今日任务全部完成
+                        <span>&#127881;</span>
+                        <p>太棒了！今日任务全部完成</p>
                     </div>
                 </div>
+
+                <!-- 下方：其他信息（简化显示） -->
+                <div class="stats-row">
+                    <div class="stat-mini">
+                        <span class="stat-mini-icon">&#9889;</span>
+                        <span class="stat-mini-value" id="today-xp">0</span>
+                        <span class="stat-mini-label">今日XP</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-icon">&#127942;</span>
+                        <span class="stat-mini-value" id="total-xp">0</span>
+                        <span class="stat-mini-label">总XP</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-icon">&#128293;</span>
+                        <span class="stat-mini-value" id="streak-days">0</span>
+                        <span class="stat-mini-label">连胜</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-icon">&#9200;</span>
+                        <span class="stat-mini-value" id="countdown-mini">--:--</span>
+                        <span class="stat-mini-label">结算</span>
+                    </div>
+                </div>
+
+                <!-- 排名趋势（折叠/简化） -->
+                <div class="card trend-card compact">
+                    <div class="card-label">排名趋势</div>
+                    <div class="trend-chart" id="home-trend-chart"></div>
+                </div>
+
             </section>
 
             <!-- ======================================== -->

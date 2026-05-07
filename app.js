@@ -702,48 +702,34 @@ const app = {
      * 更新首页的数据概览
      */
     updateHomeStats() {
-        // 当前排名
+        // 当前排名（顶部简洁显示）
         const rankEl = document.getElementById('current-rank');
-        rankEl.textContent = this.formatNumber(this.data.currentRank);
-
-        // 排名变动指示
-        const changeEl = document.getElementById('rank-change');
-        const lastHistory = this.data.rankHistory[this.data.rankHistory.length - 1];
-        if (lastHistory && lastHistory.change !== 0) {
-            const change = lastHistory.change;
-            if (change < 0) {
-                // 排名上升（数字变小）
-                changeEl.textContent = '\u2191 ' + this.formatNumber(Math.abs(change));
-                changeEl.className = 'rank-change up';
-            } else {
-                // 排名下降（数字变大）
-                changeEl.textContent = '\u2193 ' + this.formatNumber(change);
-                changeEl.className = 'rank-change down';
-            }
-        } else {
-            changeEl.textContent = '';
-            changeEl.className = 'rank-change';
+        if (rankEl) {
+            rankEl.textContent = this.formatNumber(this.data.currentRank);
         }
 
-        // 排名进度条（排名越靠前，进度条越长）
-        const progress = ((1 - this.data.currentRank / TOTAL_STUDENTS) * 100).toFixed(2);
-        document.getElementById('rank-progress').style.width = progress + '%';
-
         // 排名百分比
-        const percentile = ((1 - this.data.currentRank / TOTAL_STUDENTS) * 100).toFixed(2);
-        document.getElementById('rank-percentile').textContent = '前 ' + percentile + '%';
+        const percentileEl = document.getElementById('rank-percentile');
+        if (percentileEl) {
+            const percentile = ((1 - this.data.currentRank / TOTAL_STUDENTS) * 100).toFixed(2);
+            percentileEl.textContent = '前 ' + percentile + '%';
+        }
 
-        // 今日XP
-        document.getElementById('today-xp').textContent = this.formatNumber(this.data.todayXP);
+        // 底部简化统计
+        const todayXPEl = document.getElementById('today-xp');
+        if (todayXPEl) {
+            todayXPEl.textContent = this.formatNumber(this.data.todayXP);
+        }
 
-        // 总XP
-        document.getElementById('total-xp').textContent = this.formatNumber(this.data.totalXP);
+        const totalXPEl = document.getElementById('total-xp');
+        if (totalXPEl) {
+            totalXPEl.textContent = this.formatNumber(this.data.totalXP);
+        }
 
-        // 连胜天数
-        document.getElementById('streak-days').textContent = this.data.streakDays;
-
-        // 今日完成任务数
-        document.getElementById('today-tasks').textContent = this.data.todayCompletedTasks;
+        const streakEl = document.getElementById('streak-days');
+        if (streakEl) {
+            streakEl.textContent = this.data.streakDays;
+        }
     },
 
     /**
@@ -756,7 +742,10 @@ const app = {
             ? `连胜${this.data.streakDays}天，加成 x${multiplier.toFixed(1)}（+${bonusPercent}%）`
             : '完成今日任务即可开启连胜加成！';
 
-        document.getElementById('bonus-desc').textContent = desc;
+        const bonusDescEl = document.getElementById('bonus-desc');
+        if (bonusDescEl) {
+            bonusDescEl.textContent = desc;
+        }
     },
 
     /**
@@ -765,10 +754,16 @@ const app = {
     renderTodoList() {
         const todoListEl = document.getElementById('todo-list');
         const todoEmptyEl = document.getElementById('todo-empty');
+        const todoCountEl = document.getElementById('todo-count');
         const today = this.getTodayStr();
 
         // 获取今日未完成的任务
         const undoneTasks = this.data.tasks.filter(t => t.date === today && !t.completed);
+
+        // 更新任务数量显示
+        if (todoCountEl) {
+            todoCountEl.textContent = `${undoneTasks.length} 个任务`;
+        }
 
         // 如果没有未做任务，显示空状态
         if (undoneTasks.length === 0) {

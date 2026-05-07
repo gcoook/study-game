@@ -534,6 +534,113 @@ html, body {
 }
 
 /* ============================================
+   首页 - 新布局（顶部排名 + 中间待办 + 底部信息）
+   ============================================ */
+
+/* 顶部排名显示 */
+.header-rank {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) 0;
+    margin-bottom: var(--spacing-sm);
+}
+
+.header-rank-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.header-rank-number {
+    font-size: 36px;
+    font-weight: 800;
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-rank-percent {
+    font-size: 13px;
+    color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* 主待办区域 */
+.main-todo {
+    min-height: 300px;
+    margin-bottom: var(--spacing-md);
+}
+
+.todo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.todo-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.todo-count {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.main-todo-list {
+    min-height: 200px;
+}
+
+/* 底部简化统计 */
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.stat-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.stat-mini-icon {
+    font-size: 18px;
+}
+
+.stat-mini-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-mini-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* 简化的趋势卡片 */
+.trend-card.compact {
+    padding: var(--spacing-sm);
+}
+
+.trend-card.compact .trend-chart {
+    height: 80px;
+}
+
+/* ============================================
    首页 - 待办清单
    ============================================ */
 .todo-card {
