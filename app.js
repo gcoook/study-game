@@ -425,22 +425,59 @@ const app = {
             data: userData
         };
 
-        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const jsonStr = JSON.stringify(exportObj, null, 2);
+
+        // 优先尝试复制到剪贴板（iPhone兼容）
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(jsonStr).then(() => {
+                alert('数据已复制到剪贴板！\n\n请打开备忘录粘贴保存，导入时再复制回来。');
+            }).catch(() => {
+                this.downloadFile(jsonStr);
+            });
+        } else {
+            this.downloadFile(jsonStr);
+        }
+    },
+
+    /**
+     * 下载文件（备用方案）
+     */
+    downloadFile(jsonStr) {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `study_game_backup_${this.data.currentUser}_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-
-        alert('数据已导出');
+        alert('数据已导出！');
     },
 
     /**
      * 触发导入数据（点击隐藏的文件input）
      */
     importData() {
-        document.getElementById('import-file').click();
+        const choice = confirm('选择导入方式：\n\n确定 = 从剪贴板粘贴导入\n取消 = 从文件导入');
+        if (choice) {
+            this.importFromClipboard();
+        } else {
+            document.getElementById('import-file').click();
+        }
+    },
+
+    /**
+     * 从剪贴板导入数据
+     */
+    importFromClipboard() {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText().then(text => {
+                this.processImportData(text);
+            }).catch(() => {
+                alert('无法读取剪贴板，请确保已复制数据');
+            });
+        } else {
+            alert('您的浏览器不支持剪贴板读取，请使用文件导入');
+        }
     },
 
     /**
@@ -454,41 +491,49 @@ const app = {
         const reader = new FileReader();
         const self = this;
         reader.onload = function(e) {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (!imported.data || !imported.user) {
-                    throw new Error('无效的数据文件');
-                }
-
-                // 验证导入数据的账号
-                const username = imported.user;
-
-                // 如果账号不存在，创建它
-                if (!self.data.users[username]) {
-                    self.data.users[username] = imported.data;
-                } else {
-                    // 询问是否覆盖
-                    if (!confirm('账号已存在，是否覆盖？')) {
-                        return;
-                    }
-                    self.data.users[username] = imported.data;
-                }
-
-                // 切换到该账号
-                self.data.currentUser = username;
-                self.data.isLoggedIn = true;
-                self.saveData();
-
-                self.showMainPage();
-                alert('数据导入成功');
-            } catch (err) {
-                alert('导入失败：' + err.message);
-            }
+            self.processImportData(e.target.result);
         };
         reader.readAsText(file);
 
         // 清空input以便重复选择同一文件
         event.target.value = '';
+    },
+
+    /**
+     * 处理导入数据（通用方法）
+     * @param {string} jsonStr - JSON字符串
+     */
+    processImportData(jsonStr) {
+        try {
+            const imported = JSON.parse(jsonStr);
+            if (!imported.data || !imported.user) {
+                throw new Error('无效的数据文件');
+            }
+
+            // 验证导入数据的账号
+            const username = imported.user;
+
+            // 如果账号不存在，创建它
+            if (!this.data.users[username]) {
+                this.data.users[username] = imported.data;
+            } else {
+                // 询问是否覆盖
+                if (!confirm('账号已存在，是否覆盖？')) {
+                    return;
+                }
+                this.data.users[username] = imported.data;
+            }
+
+            // 切换到该账号
+            this.data.currentUser = username;
+            this.data.isLoggedIn = true;
+            this.saveData();
+
+            this.showMainPage();
+            alert('数据导入成功');
+        } catch (err) {
+            alert('导入失败：' + err.message);
+        }
     },
 
     // ============================================
