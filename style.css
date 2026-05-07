@@ -1,0 +1,1305 @@
+/* ============================================
+   学习闯关 - 游戏化学习反馈系统 样式文件
+   深色主题 + 金色/橙色强调色
+   手机端优先设计
+   ============================================ */
+
+/* ---------- CSS变量（主题颜色配置） ---------- */
+/* 通过修改这里的值可以快速更换整体主题 */
+:root {
+    /* 背景色系 */
+    --bg-primary: #0a0a1a;        /* 最深背景色 */
+    --bg-secondary: #12122a;      /* 次级背景色（卡片等） */
+    --bg-tertiary: #1a1a3e;       /* 第三级背景色（输入框等） */
+
+    /* 文字色系 */
+    --text-primary: #ffffff;       /* 主要文字颜色 */
+    --text-secondary: #a0a0c0;     /* 次要文字颜色 */
+    --text-muted: #606080;         /* 更淡的文字（提示等） */
+
+    /* 强调色系（金色/橙色） */
+    --accent-gold: #ffd700;        /* 金色 - 主要强调色 */
+    --accent-orange: #ff8c00;      /* 橙色 - 次要强调色 */
+    --accent-red: #ff4444;         /* 红色 - 警告/下降 */
+    --accent-green: #00e676;       /* 绿色 - 成功/上升 */
+
+    /* 渐变色 */
+    --gradient-gold: linear-gradient(135deg, #ffd700, #ff8c00);
+    --gradient-dark: linear-gradient(180deg, #0a0a1a, #12122a);
+
+    /* 间距 */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+
+    /* 阴影 */
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(255, 215, 0, 0.2);
+
+    /* 动画时长 */
+    --anim-fast: 0.2s;
+    --anim-normal: 0.3s;
+    --anim-slow: 0.5s;
+}
+
+/* ---------- 全局重置样式 ---------- */
+/* 去掉浏览器默认的边距和内边距 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 页面整体样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* 防止移动端长按弹出菜单 */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ---------- 页面容器 ---------- */
+/* 所有页面共用样式，通过 display 控制显示哪个页面 */
+.page {
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* ============================================
+   首次使用 - 设置页面样式
+   ============================================ */
+.setup-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-xl);
+    /* 背景渐变 */
+    background: var(--gradient-dark);
+}
+
+/* Logo区域 */
+.setup-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    /* 入场动画：从上方淡入 */
+    animation: fadeInDown 0.8s ease-out;
+}
+
+/* Logo图标容器 */
+.logo-icon {
+    font-size: 64px;
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    display: inline-block;
+}
+
+/* Logo中的星星 */
+.logo-star {
+    color: var(--accent-gold);
+    position: absolute;
+    top: -10px;
+    right: -20px;
+    font-size: 28px;
+    /* 星星闪烁动画 */
+    animation: twinkle 2s ease-in-out infinite;
+}
+
+/* Logo中的书本 */
+.logo-book {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+}
+
+/* 标题文字 */
+.setup-title {
+    font-size: 36px;
+    font-weight: 800;
+    /* 金色渐变文字 */
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 4px;
+}
+
+/* 副标题 */
+.setup-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+    letter-spacing: 2px;
+}
+
+/* 设置表单 */
+.setup-form {
+    width: 100%;
+    max-width: 360px;
+    /* 入场动画：延迟淡入 */
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+/* 表单组 */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* 表单标签 */
+.form-group label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+}
+
+/* 表单输入框 */
+.form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 16px;
+    outline: none;
+    /* 聚焦时边框变为金色 */
+    transition: border-color var(--anim-normal), box-shadow var(--anim-normal);
+}
+
+/* 输入框聚焦样式 */
+.form-group input:focus {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+}
+
+/* 输入框占位符颜色 */
+.form-group input::placeholder {
+    color: var(--text-muted);
+}
+
+/* 表单提示文字 */
+.form-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+/* 主要按钮（金色渐变） */
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: var(--gradient-gold);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #0a0a1a;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 2px;
+    /* 按钮悬停效果 */
+    transition: transform var(--anim-fast), box-shadow var(--anim-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 按钮悬停/点击效果 */
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   主应用页面样式
+   ============================================ */
+
+/* 顶部标题栏 */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px var(--spacing-md);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* 标题栏左侧 */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* 标题栏图标 */
+.header-icon {
+    color: var(--accent-gold);
+    font-size: 20px;
+}
+
+/* 标题栏昵称 */
+.header-nickname {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 连胜徽章 */
+.streak-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: rgba(255, 140, 0, 0.15);
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--accent-orange);
+    font-weight: 600;
+}
+
+/* 连胜火焰图标 */
+.streak-fire {
+    font-size: 16px;
+}
+
+/* 内容区域 */
+.app-content {
+    padding: var(--spacing-md);
+    padding-bottom: 80px; /* 为底部导航栏留出空间 */
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Tab内容区域 - 默认隐藏 */
+.tab-content {
+    display: none;
+    /* 切换时的淡入动画 */
+    animation: fadeIn var(--anim-normal) ease-out;
+}
+
+/* 当前激活的Tab内容 - 显示 */
+.tab-content.active {
+    display: block;
+}
+
+/* ============================================
+   通用卡片样式
+   ============================================ */
+.card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-card);
+    /* 卡片边框微光效果 */
+    border: 1px solid rgba(255, 215, 0, 0.08);
+}
+
+/* 卡片标签（标题） */
+.card-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   首页 - 排名卡片
+   ============================================ */
+.rank-card {
+    text-align: center;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+    position: relative;
+    overflow: hidden;
+}
+
+/* 排名卡片装饰光效 */
+.rank-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* 排名数字显示 */
+.rank-display {
+    position: relative;
+    margin-bottom: var(--spacing-md);
+}
+
+/* 排名数字 */
+.rank-number {
+    font-size: 48px;
+    font-weight: 800;
+    /* 金色渐变文字 */
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+    line-height: 1.2;
+}
+
+/* 排名变动指示 */
+.rank-change {
+    font-size: 14px;
+    font-weight: 600;
+    margin-left: var(--spacing-sm);
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* 排名上升样式 */
+.rank-change.up {
+    color: var(--accent-green);
+    background: rgba(0, 230, 118, 0.1);
+}
+
+/* 排名下降样式 */
+.rank-change.down {
+    color: var(--accent-red);
+    background: rgba(255, 68, 68, 0.1);
+}
+
+/* 排名进度条 */
+.rank-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 排名进度条填充 */
+.rank-progress {
+    height: 100%;
+    background: var(--gradient-gold);
+    border-radius: 3px;
+    /* 进度条动画 */
+    transition: width 1s ease-out;
+}
+
+/* 排名信息行 */
+.rank-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ============================================
+   首页 - 数据概览网格
+   ============================================ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+/* 单个数据项 */
+.stat-item {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    text-align: center;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255, 215, 0, 0.05);
+    /* 悬停效果 */
+    transition: transform var(--anim-fast), border-color var(--anim-normal);
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 215, 0, 0.15);
+}
+
+/* 数据项图标 */
+.stat-icon {
+    font-size: 24px;
+    margin-bottom: var(--spacing-xs);
+}
+
+/* 不同数据项的图标颜色 */
+.xp-icon { color: var(--accent-gold); }
+.total-icon { color: var(--accent-orange); }
+.streak-icon { color: #ff6b35; }
+.task-icon { color: var(--accent-green); }
+
+/* 数据项数值 */
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+/* 数据项标签 */
+.stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   首页 - 趋势图卡片
+   ============================================ */
+.trend-card {
+    padding: var(--spacing-md);
+}
+
+/* 趋势图容器 */
+.trend-chart {
+    width: 100%;
+    height: 120px;
+    position: relative;
+}
+
+/* 趋势图中的SVG */
+.trend-chart svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ============================================
+   首页 - 加成卡片
+   ============================================ */
+.bonus-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.05));
+    border: 1px solid rgba(255, 215, 0, 0.15);
+}
+
+/* 加成图标 */
+.bonus-icon {
+    font-size: 32px;
+    /* 图标呼吸动画 */
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* 加成文字 */
+.bonus-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-gold);
+    margin-bottom: 2px;
+}
+
+/* 加成描述 */
+.bonus-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   任务页 - 任务统计
+   ============================================ */
+.task-summary {
+    text-align: center;
+    padding: var(--spacing-sm);
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.task-summary strong {
+    color: var(--accent-gold);
+}
+
+/* ============================================
+   任务页 - 添加任务区域
+   ============================================ */
+.add-task-area {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+/* 任务输入框 */
+.add-task-area input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+    transition: border-color var(--anim-normal);
+}
+
+.add-task-area input:focus {
+    border-color: var(--accent-gold);
+}
+
+.add-task-area input::placeholder {
+    color: var(--text-muted);
+}
+
+/* 添加按钮 */
+.btn-add {
+    width: 48px;
+    height: 48px;
+    background: var(--gradient-gold);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #0a0a1a;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--anim-fast), box-shadow var(--anim-normal);
+    flex-shrink: 0;
+}
+
+.btn-add:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.btn-add:active {
+    transform: scale(0.95);
+}
+
+/* ============================================
+   任务页 - 任务配置区域（类型选择 + 星级选择）
+   ============================================ */
+/* 任务配置区域 */
+.task-config-area {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+}
+
+/* 类型选择行 */
+.task-type-row {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.type-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all var(--anim-fast);
+    color: var(--text-muted);
+}
+
+.type-btn input[type="radio"] {
+    display: none;
+}
+
+.type-btn.required:has(input:checked) {
+    background: rgba(100, 149, 237, 0.15);
+    border-color: #6495ed;
+    color: #6495ed;
+}
+
+.type-btn.extra:has(input:checked) {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+/* 星级选择器 */
+.star-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 4px 0;
+}
+
+.star-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.stars {
+    display: flex;
+    gap: 4px;
+}
+
+.star {
+    font-size: 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color var(--anim-fast), transform var(--anim-fast);
+    user-select: none;
+}
+
+.star:hover {
+    transform: scale(1.2);
+}
+
+.star.active {
+    color: var(--accent-gold);
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.star-xp {
+    font-size: 13px;
+    color: var(--accent-gold);
+    font-weight: 600;
+    margin-left: auto;
+}
+
+/* 结算倒计时卡片 */
+.countdown-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.countdown-icon {
+    font-size: 28px;
+}
+
+.countdown-title {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.countdown-time {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown-status {
+    margin-left: auto;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    background: rgba(0, 230, 118, 0.15);
+    color: var(--accent-green);
+}
+
+.countdown-status.buffer {
+    background: rgba(255, 140, 0, 0.15);
+    color: var(--accent-orange);
+    animation: pulse 1s ease-in-out infinite;
+}
+
+/* 任务卡片中的星级显示 */
+.task-stars {
+    font-size: 12px;
+    color: var(--accent-gold);
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   任务页 - 任务列表
+   ============================================ */
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* 单个任务卡片 */
+.task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* 任务入场动画 */
+    animation: slideInLeft var(--anim-normal) ease-out;
+    transition: transform var(--anim-fast), opacity var(--anim-normal);
+}
+
+/* 任务悬停效果 */
+.task-item:hover {
+    transform: translateX(4px);
+}
+
+/* 已完成的任务样式 */
+.task-item.completed {
+    opacity: 0.5;
+    border-color: rgba(0, 230, 118, 0.2);
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+/* 任务完成按钮（圆形复选框） */
+.task-check {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--anim-normal);
+    color: transparent;
+    font-size: 14px;
+}
+
+/* 复选框悬停 */
+.task-check:hover {
+    border-color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+/* 已完成的复选框 */
+.task-item.completed .task-check {
+    border-color: var(--accent-green);
+    background: var(--accent-green);
+    color: #0a0a1a;
+}
+
+/* 任务内容区域 */
+.task-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* 任务头部（类型标签 + XP） */
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 任务类型标签 */
+.task-type-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.task-type-badge.required {
+    background: rgba(100, 149, 237, 0.2);
+    color: #6495ed;
+}
+
+.task-type-badge.extra {
+    background: rgba(255, 215, 0, 0.2);
+    color: var(--accent-gold);
+}
+
+/* 任务文字 */
+.task-text {
+    font-size: 15px;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+/* 任务XP显示 */
+.task-xp {
+    font-size: 12px;
+    color: var(--accent-gold);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* 任务删除按钮 */
+.task-delete {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--anim-fast), background var(--anim-fast);
+    opacity: 0;
+}
+
+.task-item:hover .task-delete {
+    opacity: 1;
+}
+
+.task-delete:hover {
+    color: var(--accent-red);
+    background: rgba(255, 68, 68, 0.1);
+}
+
+/* 空状态提示 */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xl) var(--spacing-md);
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 14px;
+}
+
+/* ============================================
+   排行页 - 排名图表
+   ============================================ */
+.ranking-card {
+    padding: var(--spacing-md);
+}
+
+/* 排名柱状图容器 */
+.ranking-chart {
+    width: 100%;
+    height: 200px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    gap: 8px;
+    padding-top: 20px;
+}
+
+/* 单个柱子 */
+.rank-bar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+/* 柱子本体 */
+.rank-bar-fill {
+    width: 100%;
+    max-width: 40px;
+    border-radius: 6px 6px 2px 2px;
+    /* 柱子入场动画 */
+    animation: growUp 0.8s ease-out;
+    position: relative;
+    min-height: 4px;
+    /* 渐变色柱子 */
+    background: linear-gradient(180deg, var(--accent-gold), var(--accent-orange));
+    transition: height 0.5s ease-out;
+}
+
+/* 柱子上的数值标签 */
+.rank-bar-value {
+    font-size: 10px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* 柱子底部的日期标签 */
+.rank-bar-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ============================================
+   排行页 - 详细数据列表
+   ============================================ */
+.ranking-detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+/* 单条排名记录 */
+.ranking-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+/* 排名记录日期 */
+.ranking-detail-date {
+    color: var(--text-secondary);
+}
+
+/* 排名记录数值 */
+.ranking-detail-rank {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* 排名记录变动 */
+.ranking-detail-change {
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.ranking-detail-change.up {
+    color: var(--accent-green);
+}
+
+.ranking-detail-change.down {
+    color: var(--accent-red);
+}
+
+/* ============================================
+   底部Tab导航栏
+   ============================================ */
+.tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    background: var(--bg-secondary);
+    border-top: 1px solid rgba(255, 215, 0, 0.1);
+    z-index: 100;
+    /* 限制最大宽度，居中显示 */
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* 单个Tab项 */
+.tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--anim-normal);
+    /* 默认颜色 */
+    color: var(--text-muted);
+}
+
+/* Tab图标 */
+.tab-icon {
+    font-size: 22px;
+    transition: transform var(--anim-fast);
+}
+
+/* Tab文字标签 */
+.tab-label {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* 激活状态的Tab */
+.tab-item.active {
+    color: var(--accent-gold);
+}
+
+.tab-item.active .tab-icon {
+    transform: scale(1.15);
+}
+
+/* Tab悬停效果 */
+.tab-item:hover {
+    color: var(--accent-orange);
+    background: rgba(255, 215, 0, 0.05);
+}
+
+/* ============================================
+   XP飞出动画
+   完成任务时 "+100 XP" 从任务位置飞向顶部XP显示
+   ============================================ */
+.xp-animation-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* XP飞出文字 */
+.xp-fly {
+    position: absolute;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent-gold);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    pointer-events: none;
+    /* 飞出动画 */
+    animation: xpFlyUp 1.2s ease-out forwards;
+    white-space: nowrap;
+}
+
+/* ============================================
+   排名变动动画
+   ============================================ */
+.rank-animation-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* 排名上升动画文字 */
+.rank-fly {
+    position: absolute;
+    font-size: 16px;
+    font-weight: 700;
+    pointer-events: none;
+    white-space: nowrap;
+    /* 飞出动画 */
+    animation: rankFlyUp 1.5s ease-out forwards;
+}
+
+.rank-fly.up {
+    color: var(--accent-green);
+    text-shadow: 0 0 8px rgba(0, 230, 118, 0.5);
+}
+
+.rank-fly.down {
+    color: var(--accent-red);
+    text-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+}
+
+/* ============================================
+   关键帧动画定义
+   ============================================ */
+
+/* 从上方淡入 */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 从下方淡入 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 普通淡入 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 星星闪烁 */
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* 脉冲呼吸效果 */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* 从左侧滑入 */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* XP飞出动画 */
+@keyframes xpFlyUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-60px) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-120px) scale(0.8);
+    }
+}
+
+/* 排名飞出动画 */
+@keyframes rankFlyUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-30px) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-80px) scale(0.9);
+    }
+}
+
+/* 柱状图从下往上生长 */
+@keyframes growUp {
+    from {
+        height: 0;
+    }
+}
+
+/* 排名数字跳动动画 */
+@keyframes rankBounce {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.1); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+/* 排名数字跳动时的class */
+.rank-bounce {
+    animation: rankBounce 0.5s ease-out;
+}
+
+/* 输入错误时的抖动动画 */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* ============================================
+   响应式设计
+   在大屏幕上限制最大宽度，居中显示
+   ============================================ */
+@media (min-width: 481px) {
+    body {
+        background: #050510;
+    }
+
+    .page {
+        max-width: 480px;
+        margin: 0 auto;
+        /* 大屏幕上添加边框和阴影，模拟手机屏幕 */
+        box-shadow: 0 0 60px rgba(255, 215, 0, 0.05);
+        min-height: 100vh;
+    }
+
+    .tab-bar {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+/* ============================================
+   滚动条美化
+   ============================================ */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 215, 0, 0.3);
+}
+
+/* ============================================
+   输入框数字样式修复
+   隐藏数字输入框的上下箭头
+   ============================================ */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>学习闯关 - 游戏化学习反馈系统</title>
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ============================================ -->
+    <!-- 首次使用 - 设置页面 -->
+    <!-- 用户第一次打开时显示，输入基本信息后进入主界面 -->
+    <!-- ============================================ -->
+    <div id="setup-page" class="page">
+        <div class="setup-container">
+            <!-- 应用标题和Logo区域 -->
+            <div class="setup-header">
+                <div class="logo-icon">
+                    <!-- 用纯CSS绘制的书本+星星图标 -->
+                    <span class="logo-star">&#9733;</span>
+                    <span class="logo-book">&#128218;</span>
+                </div>
+                <h1 class="setup-title">学习闯关</h1>
+                <p class="setup-subtitle">把学习变成一场冒险</p>
+            </div>
+
+            <!-- 设置表单 -->
+            <div class="setup-form">
+                <!-- 昵称输入 -->
+                <div class="form-group">
+                    <label for="nickname-input">你的昵称</label>
+                    <input type="text" id="nickname-input" placeholder="给自己起个响亮的名字" maxlength="12" autocomplete="off">
+                </div>
+
+                <!-- 中考全省排名输入 -->
+                <div class="form-group">
+                    <label for="rank-input">中考全省排名</label>
+                    <input type="number" id="rank-input" placeholder="例如：15000" min="1" max="133279">
+                    <p class="form-hint">全省中考总人数133,279人，排名越靠前起点越高</p>
+                </div>
+
+                <!-- 开始按钮 -->
+                <button id="start-btn" class="btn-primary" onclick="app.startGame()">
+                    开始冒险
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 主应用页面 -->
+    <!-- 包含首页、任务、排行三个Tab页 -->
+    <!-- ============================================ -->
+    <div id="main-page" class="page" style="display: none;">
+
+        <!-- 顶部标题栏 -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="header-icon">&#9733;</span>
+                <span id="header-nickname" class="header-nickname">冒险者</span>
+            </div>
+            <div class="header-right">
+                <!-- 连胜天数显示 -->
+                <div class="streak-badge" id="header-streak">
+                    <span class="streak-fire">&#128293;</span>
+                    <span id="header-streak-num">0</span>天连胜
+                </div>
+            </div>
+        </header>
+
+        <!-- 内容区域（三个Tab页的内容） -->
+        <main class="app-content">
+
+            <!-- ======================================== -->
+            <!-- Tab1: 首页 - 今日概览 -->
+            <!-- ======================================== -->
+            <section id="tab-home" class="tab-content active">
+                <!-- 排名卡片 -->
+                <div class="card rank-card">
+                    <div class="card-label">当前全省排名</div>
+                    <div class="rank-display">
+                        <span id="current-rank" class="rank-number">--</span>
+                        <span id="rank-change" class="rank-change"></span>
+                    </div>
+                    <div class="rank-bar">
+                        <div id="rank-progress" class="rank-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="rank-info">
+                        <span>全省133,279人</span>
+                        <span id="rank-percentile">前 --%</span>
+                    </div>
+                </div>
+
+                <!-- 今日数据概览 -->
+                <div class="stats-grid">
+                    <!-- 今日XP -->
+                    <div class="stat-item">
+                        <div class="stat-icon xp-icon">&#9889;</div>
+                        <div class="stat-value" id="today-xp">0</div>
+                        <div class="stat-label">今日经验</div>
+                    </div>
+                    <!-- 总XP -->
+                    <div class="stat-item">
+                        <div class="stat-icon total-icon">&#127942;</div>
+                        <div class="stat-value" id="total-xp">0</div>
+                        <div class="stat-label">总经验值</div>
+                    </div>
+                    <!-- 连胜天数 -->
+                    <div class="stat-item">
+                        <div class="stat-icon streak-icon">&#128293;</div>
+                        <div class="stat-value" id="streak-days">0</div>
+                        <div class="stat-label">连胜天数</div>
+                    </div>
+                    <!-- 今日完成任务数 -->
+                    <div class="stat-item">
+                        <div class="stat-icon task-icon">&#9989;</div>
+                        <div class="stat-value" id="today-tasks">0</div>
+                        <div class="stat-label">今日任务</div>
+                    </div>
+                </div>
+
+                <!-- 排名变动趋势小图 -->
+                <div class="card trend-card">
+                    <div class="card-label">排名变动趋势（最近7天）</div>
+                    <div class="trend-chart" id="home-trend-chart">
+                        <!-- JS会在这里动态绘制SVG折线图 -->
+                    </div>
+                </div>
+
+                <!-- 每日结算倒计时 -->
+                <div class="card countdown-card" id="countdown-card">
+                    <div class="countdown-icon">&#9200;</div>
+                    <div class="countdown-text">
+                        <div class="countdown-title">距离结算</div>
+                        <div id="countdown-time" class="countdown-time">--:--:--</div>
+                    </div>
+                    <div class="countdown-status" id="countdown-status">正常</div>
+                </div>
+
+                <!-- 今日加成提示 -->
+                <div class="card bonus-card" id="bonus-card">
+                    <div class="bonus-icon">&#9889;</div>
+                    <div class="bonus-text">
+                        <div class="bonus-title">今日加成</div>
+                        <div id="bonus-desc" class="bonus-desc">连胜0天，加成 x1.0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================== -->
+            <!-- Tab2: 任务 - 任务列表 -->
+            <!-- ======================================== -->
+            <section id="tab-tasks" class="tab-content">
+                <!-- 任务统计 -->
+                <div class="task-summary">
+                    <span>今日已完成 <strong id="tasks-done-count">0</strong> / <strong id="tasks-total-count">0</strong> 个任务</span>
+                </div>
+
+                <!-- 添加任务区域 -->
+                <div class="add-task-area">
+                    <input type="text" id="task-input" placeholder="输入新任务，例如：背30个英语单词" maxlength="50">
+                    <button class="btn-add" onclick="app.addTask()">
+                        <span>+</span>
+                    </button>
+                </div>
+
+                <!-- 任务类型和星级选择器 -->
+                <div class="task-config-area">
+                    <!-- 类型选择 -->
+                    <div class="task-type-row">
+                        <label class="type-btn required active">
+                            <input type="radio" name="task-type" value="required" checked>
+                            &#128221; 必做
+                        </label>
+                        <label class="type-btn extra">
+                            <input type="radio" name="task-type" value="extra">
+                            &#11088; 拓展
+                        </label>
+                    </div>
+                    <!-- 星级选择（5颗星，点击选择） -->
+                    <div class="star-selector">
+                        <span class="star-label">难度：</span>
+                        <div class="stars" id="star-selector">
+                            <span class="star" data-star="1">&#9733;</span>
+                            <span class="star" data-star="2">&#9733;</span>
+                            <span class="star" data-star="3">&#9733;</span>
+                            <span class="star" data-star="4">&#9733;</span>
+                            <span class="star" data-star="5">&#9733;</span>
+                        </div>
+                        <span class="star-xp" id="star-xp-display">50 XP</span>
+                    </div>
+                </div>
+
+                <!-- 任务列表 -->
+                <div id="task-list" class="task-list">
+                    <!-- JS会动态生成任务卡片 -->
+                </div>
+
+                <!-- 空状态提示 -->
+                <div id="empty-tasks" class="empty-state">
+                    <div class="empty-icon">&#128203;</div>
+                    <p>还没有任务，添加一个开始学习吧！</p>
+                </div>
+            </section>
+
+            <!-- ======================================== -->
+            <!-- Tab3: 排行 - 排名历史 -->
+            <!-- ======================================== -->
+            <section id="tab-ranking" class="tab-content">
+                <div class="card ranking-card">
+                    <div class="card-label">排名历史（最近7天）</div>
+                    <div class="ranking-chart" id="ranking-chart">
+                        <!-- JS会在这里动态绘制柱状图 -->
+                    </div>
+                </div>
+
+                <!-- 排名详细数据 -->
+                <div class="card ranking-detail-card">
+                    <div class="card-label">详细数据</div>
+                    <div id="ranking-detail-list" class="ranking-detail-list">
+                        <!-- JS会动态生成排名详情 -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 底部Tab导航栏 -->
+        <nav class="tab-bar">
+            <div class="tab-item active" data-tab="home" onclick="app.switchTab('home')">
+                <span class="tab-icon">&#127968;</span>
+                <span class="tab-label">首页</span>
+            </div>
+            <div class="tab-item" data-tab="tasks" onclick="app.switchTab('tasks')">
+                <span class="tab-icon">&#128203;</span>
+                <span class="tab-label">任务</span>
+            </div>
+            <div class="tab-item" data-tab="ranking" onclick="app.switchTab('ranking')">
+                <span class="tab-icon">&#127942;</span>
+                <span class="tab-label">排行</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- XP飞出动画容器 -->
+    <!-- 完成任务时显示 "+100 XP" 飞出效果 -->
+    <!-- ============================================ -->
+    <div id="xp-animation-container" class="xp-animation-container"></div>
+
+    <!-- ============================================ -->
+    <!-- 排名变动动画容器 -->
+    <!-- 排名变化时显示上升/下降动画 -->
+    <!-- ============================================ -->
+    <div id="rank-animation-container" class="rank-animation-container"></div>
+
+    <!-- 引入核心逻辑文件 -->
+    <script src="app.js"></script>
+</body>
+</html>
