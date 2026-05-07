@@ -459,49 +459,22 @@ const app = {
     },
 
     /**
-     * 触发导入数据（点击隐藏的文件input）
+     * 导入数据（从剪贴板粘贴）
      */
     importData() {
-        const choice = confirm('选择导入方式：\n\n确定 = 从剪贴板粘贴导入\n取消 = 从文件导入');
-        if (choice) {
-            this.importFromClipboard();
-        } else {
-            document.getElementById('import-file').click();
-        }
-    },
-
-    /**
-     * 从剪贴板导入数据
-     */
-    importFromClipboard() {
         if (navigator.clipboard && navigator.clipboard.readText) {
             navigator.clipboard.readText().then(text => {
+                if (!text.trim()) {
+                    alert('剪贴板为空，请先复制备份数据');
+                    return;
+                }
                 this.processImportData(text);
             }).catch(() => {
-                alert('无法读取剪贴板，请确保已复制数据');
+                alert('无法读取剪贴板，请先复制备份数据再点击导入');
             });
         } else {
-            alert('您的浏览器不支持剪贴板读取，请使用文件导入');
+            alert('您的浏览器不支持剪贴板读取');
         }
-    },
-
-    /**
-     * 处理导入文件
-     * @param {Event} event - 文件选择事件
-     */
-    handleImportFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        const self = this;
-        reader.onload = function(e) {
-            self.processImportData(e.target.result);
-        };
-        reader.readAsText(file);
-
-        // 清空input以便重复选择同一文件
-        event.target.value = '';
     },
 
     /**
