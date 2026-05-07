@@ -59,7 +59,7 @@
 }
 
 /* 页面整体样式 */
-body {
+html, body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
     background-color: var(--bg-primary);
@@ -70,9 +70,9 @@ body {
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none;
     user-select: none;
-    /* 强制内容居中 */
-    display: flex;
-    justify-content: center;
+    /* 移动端强制去除顶部偏移 */
+    padding: 0;
+    margin: 0;
 }
 
 /* ---------- 页面容器 ---------- */
@@ -82,6 +82,8 @@ body {
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0;
 }
 
 /* ============================================
