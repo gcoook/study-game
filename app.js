@@ -385,6 +385,7 @@ const app = {
      * 退出登录
      */
     logout() {
+        if (!confirm('确定要退出登录吗？')) return;
         this.data.currentUser = null;
         this.data.isLoggedIn = false;
         this.saveData();
@@ -1671,6 +1672,10 @@ const app = {
      */
     showRankAnimation(direction) {
         const container = document.getElementById('rank-animation-container');
+        const rankEl = document.getElementById('current-rank');
+
+        // 检查元素是否存在
+        if (!container || !rankEl) return;
 
         const flyEl = document.createElement('div');
         flyEl.className = 'rank-fly ' + direction;
@@ -1682,7 +1687,6 @@ const app = {
         }
 
         // 在排名显示区域附近显示
-        const rankEl = document.getElementById('current-rank');
         const rect = rankEl.getBoundingClientRect();
         flyEl.style.left = (rect.left + rect.width / 2 - 40) + 'px';
         flyEl.style.top = (rect.top + rect.height) + 'px';
