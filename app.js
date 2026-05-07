@@ -861,8 +861,13 @@ const app = {
         // 如果任务还没完成，现在要完成它
         if (!task.completed) {
             task.completed = true;
+            const wasCarriedOver = task.carriedOver;
             task.carriedOver = false; // 完成后清除延续标记
-            userData.todayCompletedTasks++;
+
+            // 延续任务不算入今日达标任务数
+            if (!wasCarriedOver) {
+                userData.todayCompletedTasks++;
+            }
 
             // 根据任务类型和星级计算基础XP
             const xpPerStar = task.type === 'extra' ? XP_PER_STAR_EXTRA : XP_PER_STAR_REQUIRED;
