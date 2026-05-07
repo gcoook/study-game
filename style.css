@@ -640,6 +640,57 @@ html, body {
     height: 80px;
 }
 
+/* 结算倒计时卡片（首页简化版） */
+.countdown-card-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.countdown-mini-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.countdown-mini-icon {
+    font-size: 24px;
+}
+
+.countdown-mini-title {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.countdown-mini-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.countdown-mini-time {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown-mini-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    background: rgba(0, 230, 118, 0.15);
+    color: var(--accent-green);
+}
+
+.countdown-mini-status.buffer {
+    background: rgba(255, 140, 0, 0.15);
+    color: var(--accent-orange);
+    animation: pulse 1s ease-in-out infinite;
+}
+
 /* ============================================
    首页 - 待办清单
    ============================================ */

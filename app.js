@@ -666,6 +666,20 @@ const app = {
                 `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
+        // 更新首页简化版倒计时
+        const countdownMiniEl = document.getElementById('countdown-mini');
+        if (countdownMiniEl) {
+            countdownMiniEl.textContent =
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // 更新结算状态
+        const miniStatusEl = document.getElementById('countdown-mini-status');
+        if (miniStatusEl) {
+            miniStatusEl.textContent = status;
+            miniStatusEl.className = 'countdown-mini-status' + (status === '缓冲期' ? ' buffer' : '');
+        }
+
         const statusEl = document.getElementById('countdown-status');
         if (statusEl) {
             statusEl.textContent = status;

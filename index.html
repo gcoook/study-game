@@ -130,17 +130,24 @@
                         <span class="stat-mini-value" id="streak-days">0</span>
                         <span class="stat-mini-label">连胜</span>
                     </div>
-                    <div class="stat-mini">
-                        <span class="stat-mini-icon">&#9200;</span>
-                        <span class="stat-mini-value" id="countdown-mini">--:--</span>
-                        <span class="stat-mini-label">结算</span>
-                    </div>
                 </div>
 
                 <!-- 排名趋势（折叠/简化） -->
                 <div class="card trend-card compact">
                     <div class="card-label">排名趋势</div>
                     <div class="trend-chart" id="home-trend-chart"></div>
+                </div>
+
+                <!-- 每日结算倒计时 -->
+                <div class="card countdown-card-mini" id="countdown-card-mini">
+                    <div class="countdown-mini-left">
+                        <span class="countdown-mini-icon">&#9200;</span>
+                        <span class="countdown-mini-title">距离结算</span>
+                    </div>
+                    <div class="countdown-mini-right">
+                        <span class="countdown-mini-time" id="countdown-mini">--:--:--</span>
+                        <span class="countdown-mini-status" id="countdown-mini-status">正常</span>
+                    </div>
                 </div>
 
             </section>
