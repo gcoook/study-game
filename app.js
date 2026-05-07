@@ -262,6 +262,7 @@ const app = {
         });
         document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
         document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('import-form').style.display = tab === 'import' ? 'block' : 'none';
         document.getElementById('auth-error').style.display = 'none';
     },
 
@@ -504,7 +505,30 @@ const app = {
     },
 
     /**
-     * 处理导入数据（通用方法）
+     * 登录页导入（临时功能）
+     */
+    importFromLogin() {
+        document.getElementById('login-import-file').click();
+    },
+
+    /**
+     * 处理登录页导入文件
+     */
+    handleLoginImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        const self = this;
+        reader.onload = function(e) {
+            self.processImportData(e.target.result);
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    },
+
+    /**
+     * 处理导入数据（通用方法，含版本兼容）
      * @param {string} jsonStr - JSON字符串
      */
     processImportData(jsonStr) {
@@ -514,18 +538,52 @@ const app = {
                 throw new Error('无效的数据文件');
             }
 
-            // 验证导入数据的账号
             const username = imported.user;
+            let userData = imported.data;
+
+            // ===== 版本兼容处理 =====
+            // 确保关键字段存在，缺失则用默认值填充
+            const defaults = {
+                tasks: [],
+                selectedStars: 1,
+                selectedSubject: 'chinese',
+                totalXP: 0,
+                todayXP: 0,
+                streakDays: 0,
+                todayCompletedTasks: 0,
+                lastActiveDate: null,
+                settlementDate: null,
+                rankHistory: [],
+                presets: {
+                    chinese: ['背诵古诗', '阅读理解', '写作文', '练字'],
+                    math: ['做练习题', '整理错题', '背诵公式', '预习新课'],
+                    english: ['背单词', '听力练习', '阅读理解', '写作练习'],
+                    politics: ['背诵知识点', '整理笔记', '做选择题', '看新闻'],
+                    history: ['背诵时间线', '整理事件', '做材料题', '看纪录片'],
+                    geo: ['看地图', '背诵地形', '做气候题', '整理笔记']
+                }
+            };
+
+            for (const key in defaults) {
+                if (userData[key] === undefined || userData[key] === null) {
+                    if (typeof defaults[key] === 'object' && !Array.isArray(defaults[key])) {
+                        // 对象类型：合并默认值
+                        userData[key] = { ...defaults[key], ...(userData[key] || {}) };
+                    } else {
+                        userData[key] = defaults[key];
+                    }
+                }
+            }
 
             // 如果账号不存在，创建它
             if (!this.data.users[username]) {
-                this.data.users[username] = imported.data;
+                this.data.users[username] = userData;
             } else {
                 // 询问是否覆盖
                 if (!confirm('账号已存在，是否覆盖？')) {
                     return;
                 }
-                this.data.users[username] = imported.data;
+                this.data.users[username] = userData;
             }
 
             // 切换到该账号

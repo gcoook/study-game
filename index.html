@@ -44,6 +44,7 @@
             <div class="auth-tabs">
                 <button class="auth-tab active" data-tab="login" onclick="app.switchAuthTab('login')">登录</button>
                 <button class="auth-tab" data-tab="register" onclick="app.switchAuthTab('register')">注册</button>
+                <button class="auth-tab" data-tab="import" onclick="app.switchAuthTab('import')">导入</button>
             </div>
 
             <!-- 登录表单 -->
@@ -80,9 +81,19 @@
                 <button type="submit" class="btn-primary" onclick="app.register(event)">注册</button>
             </form>
 
+            <!-- 导入表单（默认隐藏，临时功能） -->
+            <form class="setup-form" id="import-form" style="display: none;">
+                <div class="form-group">
+                    <label>导入备份数据</label>
+                    <p class="form-hint">选择之前导出的JSON文件，将自动创建账号并导入数据</p>
+                    <button type="button" class="btn-primary" onclick="app.importFromLogin()">选择文件导入</button>
+                    <input type="file" id="login-import-file" accept=".json" style="display: none;" onchange="app.handleLoginImportFile(event)">
+                </div>
+            </form>
+
             <!-- 错误提示 -->
             <div id="auth-error" class="auth-error" style="display: none;"></div>
-            <div class="auth-version">学习闯关 v1.6 正式版</div>
+            <div class="auth-version">学习闯关 v1.7 正式版</div>
         </div>
     </div>
 
@@ -334,7 +345,7 @@
                     </div>
                 </div>
 
-                <div class="settings-version">学习闯关 v1.6 正式版</div>
+                <div class="settings-version">学习闯关 v1.7 正式版</div>
             </section>
 
         </main>
