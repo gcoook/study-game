@@ -1758,6 +1758,87 @@ html, body {
     }
 }
 
+/* ============================================
+   设置页面
+   ============================================ */
+.settings-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.settings-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.settings-card {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px var(--spacing-lg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-label {
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.settings-value {
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.settings-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: 14px var(--spacing-lg);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 15px;
+    cursor: pointer;
+    transition: background var(--anim-fast);
+    text-align: left;
+}
+
+.settings-btn:last-child {
+    border-bottom: none;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-btn:active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-btn-danger {
+    color: var(--accent-red);
+}
+
+.settings-btn-danger:hover {
+    background: rgba(255, 59, 48, 0.1);
+}
+
 /* 柱状图从下往上生长 */
 @keyframes growUp {
     from {

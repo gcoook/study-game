@@ -226,10 +226,13 @@ const app = {
         document.getElementById('tab-' + tabName).classList.add('active');
         document.querySelector(`.tab-item[data-tab="${tabName}"]`).classList.add('active');
 
-        // 3. 如果切换到排行页，重新绘制图表
+        // 3. 切换到特定页面时刷新数据
         if (tabName === 'ranking') {
             this.renderRankingChart();
             this.renderRankingDetail();
+        }
+        if (tabName === 'settings') {
+            this.updateSettingsPage();
         }
     },
 
@@ -382,25 +385,29 @@ const app = {
         this.data.currentUser = null;
         this.data.isLoggedIn = false;
         this.saveData();
-        this.closeAccountModal();
         this.showSetupPage();
     },
 
     /**
-     * 打开账号管理弹窗
+     * 更新设置页面数据
      */
-    openAccountModal() {
-        document.getElementById('account-username').textContent = this.data.currentUser || '-';
-        document.getElementById('account-modal').style.display = 'flex';
+    updateSettingsPage() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
+        const usernameEl = document.getElementById('settings-username');
+        if (usernameEl) usernameEl.textContent = userData.nickname || userData.currentUser || '-';
+
+        const rankEl = document.getElementById('settings-rank');
+        if (rankEl) rankEl.textContent = this.formatNumber(userData.currentRank);
+
+        const streakEl = document.getElementById('settings-streak');
+        if (streakEl) streakEl.textContent = userData.streakDays + ' 天';
     },
 
     /**
      * 关闭账号管理弹窗
      */
-    closeAccountModal() {
-        document.getElementById('account-modal').style.display = 'none';
-    },
-
     /**
      * 导出当前用户数据
      */
@@ -472,7 +479,6 @@ const app = {
                 self.data.isLoggedIn = true;
                 self.saveData();
 
-                self.closeAccountModal();
                 self.showMainPage();
                 alert('数据导入成功');
             } catch (err) {

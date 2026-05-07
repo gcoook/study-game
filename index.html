@@ -98,7 +98,6 @@
                 <span id="header-nickname" class="header-nickname">冒险者</span>
             </div>
             <div class="header-right">
-                <button class="btn-account" onclick="app.openAccountModal()" title="账号管理">&#9881;</button>
                 <div class="streak-badge">
                     <span class="streak-fire">&#128293;</span>
                     <span id="header-streak-num">0</span>天连胜
@@ -264,27 +263,6 @@
                     </div>
                 </div>
 
-                <!-- 账号管理弹窗 -->
-                <div id="account-modal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3>账号管理</h3>
-                            <button class="btn-close" onclick="app.closeAccountModal()">&times;</button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="account-info">
-                                <p>当前账号：<span id="account-username">-</span></p>
-                            </div>
-                            <div class="account-actions">
-                                <button class="btn-secondary" onclick="app.exportData()">&#128190; 导出数据</button>
-                                <button class="btn-secondary" onclick="app.importData()">&#128194; 导入数据</button>
-                                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="app.handleImportFile(event)">
-                                <button class="btn-danger" onclick="app.logout()">退出登录</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 任务列表 -->
                 <div id="task-list" class="task-list">
                     <!-- JS会动态生成任务卡片 -->
@@ -317,6 +295,45 @@
                 </div>
             </section>
 
+            <!-- ======================================== -->
+            <!-- Tab4: 设置 -->
+            <!-- ======================================== -->
+            <section id="tab-settings" class="tab-content">
+                <div class="settings-section">
+                    <div class="settings-title">账号信息</div>
+                    <div class="card settings-card">
+                        <div class="settings-item">
+                            <span class="settings-label">账号</span>
+                            <span class="settings-value" id="settings-username">-</span>
+                        </div>
+                        <div class="settings-item">
+                            <span class="settings-label">当前排名</span>
+                            <span class="settings-value" id="settings-rank">-</span>
+                        </div>
+                        <div class="settings-item">
+                            <span class="settings-label">连胜天数</span>
+                            <span class="settings-value" id="settings-streak">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">数据管理</div>
+                    <div class="card settings-card">
+                        <button class="settings-btn" onclick="app.exportData()">&#128190; 导出数据</button>
+                        <button class="settings-btn" onclick="app.importData()">&#128194; 导入数据</button>
+                        <input type="file" id="import-file" accept=".json" style="display: none;" onchange="app.handleImportFile(event)">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-title">其他</div>
+                    <div class="card settings-card">
+                        <button class="settings-btn settings-btn-danger" onclick="app.logout()">&#128682; 退出登录</button>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
         <!-- 底部Tab导航栏 -->
@@ -332,6 +349,10 @@
             <div class="tab-item" data-tab="ranking" onclick="app.switchTab('ranking')">
                 <span class="tab-icon">&#127942;</span>
                 <span class="tab-label">排行</span>
+            </div>
+            <div class="tab-item" data-tab="settings" onclick="app.switchTab('settings')">
+                <span class="tab-icon">&#9881;</span>
+                <span class="tab-label">设置</span>
             </div>
         </nav>
     </div>
