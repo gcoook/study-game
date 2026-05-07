@@ -803,6 +803,9 @@ const app = {
         // 清空输入框
         input.value = '';
 
+        // 重置星星为1星
+        this.selectStar(1);
+
         // 保存数据并刷新界面
         this.saveData();
         this.renderTaskList();
@@ -1236,6 +1239,13 @@ const app = {
         // 重新渲染预设任务列表
         this.renderPresets();
 
+        // 清空输入框（切换科目时）
+        const input = document.getElementById('task-input');
+        if (input) input.value = '';
+
+        // 重置星星为1星
+        this.selectStar(1);
+
         // 保存数据
         this.saveData();
     },
@@ -1399,6 +1409,8 @@ const app = {
             input.value = presetText;
             input.focus();
         }
+        // 点击预设后重置星星为1星
+        this.selectStar(1);
     },
 
     // ============================================
