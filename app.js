@@ -165,6 +165,17 @@ const app = {
                 // 用 Object.assign 把保存的数据合并到 this.data
                 Object.assign(this.data, parsed);
             }
+
+            // 确保数据结构完整（兼容旧数据）
+            if (!this.data.users) {
+                this.data.users = {};
+            }
+            // 如果旧数据没有users但有currentRank，说明是单用户旧数据，需要重置
+            if (this.data.currentRank && Object.keys(this.data.users).length === 0) {
+                // 重置登录状态，让用户重新注册
+                this.data.isLoggedIn = false;
+                this.data.currentUser = null;
+            }
         } catch (e) {
             console.error('加载数据失败:', e);
         }
@@ -526,15 +537,18 @@ const app = {
      * 每天零点自动执行：清零当日XP、清空任务列表、记录排名历史
      */
     dailyReset() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return; // 未登录不执行
+
         const today = this.getTodayStr();
         // 今天已经重置过，跳过
-        if (this.data.lastActiveDate === today) return;
+        if (userData.lastActiveDate === today) return;
 
         // 先执行昨天的结算（如果还没结算）
         this.dailySettlement();
 
         // 计算距离上次活跃过了多少天
-        const lastDate = this.data.settlementDate || this.data.lastActiveDate;
+        const lastDate = userData.settlementDate || userData.lastActiveDate;
         const daysDiff = lastDate ? this.getDaysDiff(lastDate, today) : 1;
 
         // 更新连胜天数
@@ -542,22 +556,24 @@ const app = {
             // 昨天有完成任务（todayCompletedTasks > 0 在结算时已记录）
             // 注意：结算后todayCompletedTasks可能已被重置，需要通过结算记录判断
             // 这里简化处理：如果昨天结算了且有XP，则连胜+1
-            if (this.data.settlementDate && this.data.settlementDate !== today) {
+            if (userData.settlementDate && userData.settlementDate !== today) {
                 // 昨天已结算，说明昨天有活跃
-                this.data.streakDays++;
+                userData.streakDays++;
             }
         } else if (daysDiff > 1) {
             // 超过1天没登录，连胜中断
-            this.data.streakDays = 0;
+            userData.streakDays = 0;
         }
 
         // 重置当日数据
-        this.data.todayXP = 0;
-        this.data.todayCompletedTasks = 0;
-        this.data.lastActiveDate = today;
+        userData.todayXP = 0;
+        userData.todayCompletedTasks = 0;
+        userData.lastActiveDate = today;
 
         // 清理旧任务（只保留今天的任务）
-        this.data.tasks = this.data.tasks.filter(t => t.date === today);
+        if (userData.tasks) {
+            userData.tasks = userData.tasks.filter(t => t.date === today);
+        }
 
         this.saveData();
     },
