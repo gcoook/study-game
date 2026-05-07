@@ -523,6 +523,7 @@ const app = {
         // 保存数据并刷新界面
         this.saveData();
         this.renderTaskList();
+        this.renderTodoList();
     },
 
     /**
@@ -856,22 +857,24 @@ const app = {
             const subjectBadge = `<span class="subject-badge">${subjectName}</span>`;
 
             return `
-            <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                <button class="task-check" onclick="app.toggleTask(${task.id})">
-                    ${task.completed ? '&#10003;' : ''}
-                </button>
-                <div class="task-content">
-                    <div class="task-header">
-                        ${subjectBadge}
-                        <span class="task-type-badge ${typeClass}">${typeLabel}</span>
-                        <span class="task-stars">${starsDisplay}</span>
-                        <span class="task-xp">${task.completed ? '+' + taskXP + ' XP' : taskXP + ' XP'}</span>
+            <div class="task-item-wrapper" data-id="${task.id}">
+                <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}" ontouchstart="app.handleTouchStart(event, ${task.id})" ontouchmove="app.handleTouchMove(event, ${task.id})" ontouchend="app.handleTouchEnd(event, ${task.id})">
+                    <button class="task-check" onclick="app.toggleTask(${task.id})">
+                        ${task.completed ? '&#10003;' : ''}
+                    </button>
+                    <div class="task-content">
+                        <div class="task-header">
+                            ${subjectBadge}
+                            <span class="task-type-badge ${typeClass}">${typeLabel}</span>
+                            <span class="task-stars">${starsDisplay}</span>
+                            <span class="task-xp">${task.completed ? '+' + taskXP + ' XP' : taskXP + ' XP'}</span>
+                        </div>
+                        <span class="task-text">${this.escapeHtml(task.text)}</span>
                     </div>
-                    <span class="task-text">${this.escapeHtml(task.text)}</span>
                 </div>
-                <button class="task-delete" onclick="app.deleteTask(${task.id})" title="删除任务">
-                    &times;
-                </button>
+                <div class="task-delete-btn" onclick="app.deleteTask(${task.id})">
+                    删除
+                </div>
             </div>
         `}).join('');
     },
@@ -1038,6 +1041,70 @@ const app = {
             input.value = presetText;
             input.focus();
         }
+    },
+
+    // ============================================
+    // 滑动删除功能
+    // ============================================
+
+    /**
+     * 触摸开始 - 记录起始位置
+     */
+    handleTouchStart(event, taskId) {
+        this.touchStartX = event.touches[0].clientX;
+        this.touchStartY = event.touches[0].clientY;
+        this.currentSwipedItem = null;
+    },
+
+    /**
+     * 触摸移动 - 处理滑动
+     */
+    handleTouchMove(event, taskId) {
+        if (!this.touchStartX) return;
+
+        const touchX = event.touches[0].clientX;
+        const touchY = event.touches[0].clientY;
+        const diffX = this.touchStartX - touchX;
+        const diffY = this.touchStartY - touchY;
+
+        // 如果垂直滑动大于水平滑动，不处理（让用户正常滚动）
+        if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+        // 阻止默认行为，防止页面滚动
+        event.preventDefault();
+
+        const taskItem = event.currentTarget;
+
+        // 左滑显示删除按钮（最大80px）
+        if (diffX > 0) {
+            const translateX = Math.min(diffX, 80);
+            taskItem.style.transform = `translateX(-${translateX}px)`;
+        }
+    },
+
+    /**
+     * 触摸结束 - 判断是否显示删除按钮
+     */
+    handleTouchEnd(event, taskId) {
+        if (!this.touchStartX) return;
+
+        const touchX = event.changedTouches[0].clientX;
+        const diffX = this.touchStartX - touchX;
+        const taskItem = event.currentTarget;
+
+        // 如果滑动超过40px，显示删除按钮
+        if (diffX > 40) {
+            taskItem.classList.add('swiped');
+            taskItem.style.transform = '';
+            this.currentSwipedItem = taskItem;
+        } else {
+            // 否则恢复原位
+            taskItem.classList.remove('swiped');
+            taskItem.style.transform = '';
+        }
+
+        this.touchStartX = null;
+        this.touchStartY = null;
     },
 
     // ============================================

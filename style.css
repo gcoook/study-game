@@ -1152,6 +1152,15 @@ html, body {
 }
 
 /* 单个任务卡片 */
+/* 任务项包装器 - 用于滑动删除 */
+.task-item-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* 任务项本身 */
 .task-item {
     display: flex;
     align-items: flex-start;
@@ -1163,7 +1172,33 @@ html, body {
     border: 1px solid rgba(255, 255, 255, 0.05);
     /* 任务入场动画 */
     animation: slideInLeft var(--anim-normal) ease-out;
-    transition: transform var(--anim-fast), opacity var(--anim-normal);
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
+    touch-action: pan-y;
+}
+
+/* 任务项滑动状态 */
+.task-item.swiped {
+    transform: translateX(-80px);
+}
+
+/* 删除按钮 - 隐藏在右侧 */
+.task-delete-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    background: var(--accent-red);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    z-index: 1;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 /* 任务悬停效果 */
@@ -1260,31 +1295,7 @@ html, body {
     white-space: nowrap;
 }
 
-/* 任务删除按钮 */
-.task-delete {
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color var(--anim-fast), background var(--anim-fast);
-    opacity: 0;
-}
 
-.task-item:hover .task-delete {
-    opacity: 1;
-}
-
-.task-delete:hover {
-    color: var(--accent-red);
-    background: rgba(255, 68, 68, 0.1);
-}
 
 /* 空状态提示 */
 .empty-state {
