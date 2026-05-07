@@ -569,9 +569,8 @@ const app = {
     // ============================================
 
     /**
-     * 检查当前是否在缓冲期内（22:00-22:30）
-     * 缓冲期内完成的任务XP减半
-     * 注意：周一到周五无缓冲期，只有周末有
+     * 检查当前是否在缓冲期内
+     * 注意：已取消缓冲期，每天22:30直接截止，此函数永远返回false
      * @returns {boolean} 是否在缓冲期内
      */
     isBufferPeriod() {
@@ -583,7 +582,7 @@ const app = {
             return false;
         }
         
-        // 周末有缓冲期
+        // 周末有缓冲期（22:00-22:30）
         const hour = now.getHours();
         const minute = now.getMinutes();
         return hour === SETTLEMENT_HOUR && minute < BUFFER_MINUTES;
@@ -617,8 +616,8 @@ const app = {
         const now = new Date();
         const dayOfWeek = now.getDay();
         
-        // 周一到周五：22:30截止
-        // 周末：22:00截止（有缓冲期到22:30）
+        // 周一到周五：22:30截止，无缓冲期
+        // 周末：22:00截止，有缓冲期到22:30
         const settlementHour = (dayOfWeek >= 1 && dayOfWeek <= 5) ? SETTLEMENT_HOUR + 0.5 : SETTLEMENT_HOUR;
         const settlementTime = new Date();
         settlementTime.setHours(Math.floor(settlementHour), (settlementHour % 1) * 60, 0, 0);
