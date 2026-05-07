@@ -636,7 +636,10 @@ const app = {
      * @param {number} n - 星级（1-5）
      */
     selectStar(n) {
-        this.data.selectedStars = n;
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+        
+        userData.selectedStars = n;
 
         // 更新星星UI
         document.querySelectorAll('#star-selector .star').forEach(star => {
@@ -672,6 +675,12 @@ const app = {
      * 添加新任务
      */
     addTask() {
+        const userData = this.getCurrentUserData();
+        if (!userData) {
+            alert('请先登录');
+            return;
+        }
+
         const input = document.getElementById('task-input');
         const text = input.value.trim();
 
@@ -690,15 +699,18 @@ const app = {
             id: Date.now(),                      // 用时间戳作为唯一ID
             text: text,                          // 任务内容
             type: taskType,                      // 任务类型：required必做 / extra拓展
-            subject: this.data.selectedSubject,  // 添加科目
-            stars: this.data.selectedStars || 1, // 星级1-5
+            subject: userData.selectedSubject,   // 从用户数据获取科目
+            stars: userData.selectedStars || 1,  // 从用户数据获取星级
             completed: false,                    // 是否已完成
             date: this.getTodayStr(),            // 所属日期
             createdAt: Date.now()                // 创建时间
         };
 
         // 添加到任务列表
-        this.data.tasks.push(task);
+        if (!userData.tasks) {
+            userData.tasks = [];
+        }
+        userData.tasks.push(task);
 
         // 清空输入框
         input.value = '';
@@ -892,41 +904,46 @@ const app = {
      * 更新顶部标题栏信息
      */
     updateHeader() {
-        document.getElementById('header-nickname').textContent = this.data.nickname;
-        document.getElementById('header-streak-num').textContent = this.data.streakDays;
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+        document.getElementById('header-nickname').textContent = userData.nickname;
+        document.getElementById('header-streak-num').textContent = userData.streakDays;
     },
 
     /**
      * 更新首页的数据概览
      */
     updateHomeStats() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         // 当前排名（顶部简洁显示）
         const rankEl = document.getElementById('current-rank');
         if (rankEl) {
-            rankEl.textContent = this.formatNumber(this.data.currentRank);
+            rankEl.textContent = this.formatNumber(userData.currentRank);
         }
 
         // 排名百分比
         const percentileEl = document.getElementById('rank-percentile');
         if (percentileEl) {
-            const percentile = ((1 - this.data.currentRank / TOTAL_STUDENTS) * 100).toFixed(2);
+            const percentile = ((1 - userData.currentRank / TOTAL_STUDENTS) * 100).toFixed(2);
             percentileEl.textContent = '前 ' + percentile + '%';
         }
 
         // 底部简化统计
         const todayXPEl = document.getElementById('today-xp');
         if (todayXPEl) {
-            todayXPEl.textContent = this.formatNumber(this.data.todayXP);
+            todayXPEl.textContent = this.formatNumber(userData.todayXP);
         }
 
         const totalXPEl = document.getElementById('total-xp');
         if (totalXPEl) {
-            totalXPEl.textContent = this.formatNumber(this.data.totalXP);
+            totalXPEl.textContent = this.formatNumber(userData.totalXP);
         }
 
         const streakEl = document.getElementById('streak-days');
         if (streakEl) {
-            streakEl.textContent = this.data.streakDays;
+            streakEl.textContent = userData.streakDays;
         }
     },
 
@@ -1085,8 +1102,11 @@ const app = {
      * @param {string} subject - 科目代码
      */
     selectSubject(subject) {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+        
         // 更新当前选中的科目
-        this.data.selectedSubject = subject;
+        userData.selectedSubject = subject;
 
         // 更新科目按钮的active状态
         document.querySelectorAll('.subject-btn').forEach(btn => {
