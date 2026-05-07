@@ -1263,6 +1263,21 @@ html, body {
     margin-right: 6px;
 }
 
+/* 延续任务标记 */
+.carried-over-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: rgba(255, 68, 68, 0.2);
+    color: var(--accent-red);
+    border-radius: 10px;
+    margin-right: 6px;
+    font-weight: 600;
+}
+
+.carried-over .task-item {
+    border-left: 3px solid var(--accent-red);
+}
+
 /* ============================================
    任务页 - 任务列表
    ============================================ */

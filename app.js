@@ -685,9 +685,17 @@ const app = {
         userData.todayCompletedTasks = 0;
         userData.lastActiveDate = today;
 
-        // 清理旧任务（只保留今天的任务）
+        // 处理任务：未完成的延续到今天，已完成的清除
         if (userData.tasks) {
-            userData.tasks = userData.tasks.filter(t => t.date === today);
+            userData.tasks = userData.tasks.filter(t => {
+                if (t.completed) {
+                    return false; // 已完成的任务清除
+                }
+                // 未完成的任务延续到今天
+                t.date = today;
+                t.carriedOver = true; // 标记为延续任务
+                return true;
+            });
         }
 
         this.saveData();
@@ -853,6 +861,7 @@ const app = {
         // 如果任务还没完成，现在要完成它
         if (!task.completed) {
             task.completed = true;
+            task.carriedOver = false; // 完成后清除延续标记
             userData.todayCompletedTasks++;
 
             // 根据任务类型和星级计算基础XP
@@ -956,13 +965,30 @@ const app = {
      */
     updateCountdown() {
         const now = new Date();
+        const dayOfWeek = now.getDay();
+
+        // 周一到周五：22:30截止，无缓冲期
+        // 周末：22:00截止，有缓冲期到22:30
+        let settlementHour, settlementMinute;
+        let hasBuffer = false;
+
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            settlementHour = SETTLEMENT_HOUR;
+            settlementMinute = 30;
+            hasBuffer = false;
+        } else {
+            settlementHour = SETTLEMENT_HOUR;
+            settlementMinute = 0;
+            hasBuffer = true;
+        }
+
         const settlement = new Date();
-        settlement.setHours(SETTLEMENT_HOUR, 0, 0, 0);
+        settlement.setHours(settlementHour, settlementMinute, 0, 0);
 
         let diff = settlement - now;
         let status = '正常';
 
-        if (diff <= 0) {
+        if (diff <= 0 && hasBuffer) {
             // 已过结算时间，检查是否在缓冲期内
             const bufferEnd = new Date();
             bufferEnd.setHours(SETTLEMENT_HOUR, BUFFER_MINUTES, 0, 0);
@@ -973,10 +999,27 @@ const app = {
                 // 缓冲期也过了，显示距离明天结算的时间
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(SETTLEMENT_HOUR, 0, 0, 0);
+                const tomorrowDay = tomorrow.getDay();
+                if (tomorrowDay >= 1 && tomorrowDay <= 5) {
+                    tomorrow.setHours(SETTLEMENT_HOUR, 30, 0, 0);
+                } else {
+                    tomorrow.setHours(SETTLEMENT_HOUR, 0, 0, 0);
+                }
                 diff = tomorrow - now;
                 status = '已结算';
             }
+        } else if (diff <= 0 && !hasBuffer) {
+            // 无缓冲期，已过结算时间，显示距离明天结算的时间
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowDay = tomorrow.getDay();
+            if (tomorrowDay >= 1 && tomorrowDay <= 5) {
+                tomorrow.setHours(SETTLEMENT_HOUR, 30, 0, 0);
+            } else {
+                tomorrow.setHours(SETTLEMENT_HOUR, 0, 0, 0);
+            }
+            diff = tomorrow - now;
+            status = '已结算';
         }
 
         // 计算时分秒
@@ -1216,14 +1259,18 @@ const app = {
             const subjectName = SUBJECT_NAMES[task.subject] || '其他';
             const subjectBadge = `<span class="subject-badge">${subjectName}</span>`;
 
+            // 延续标记
+            const carriedOverBadge = task.carriedOver && !task.completed ? '<span class="carried-over-badge">延续</span>' : '';
+
             return `
-            <div class="task-item-wrapper" data-id="${task.id}">
+            <div class="task-item-wrapper ${task.carriedOver && !task.completed ? 'carried-over' : ''}" data-id="${task.id}">
                 <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}" ontouchstart="app.handleTouchStart(event, ${task.id})" ontouchmove="app.handleTouchMove(event, ${task.id})" ontouchend="app.handleTouchEnd(event, ${task.id})">
                     <button class="task-check" onclick="app.toggleTask(${task.id})">
                         ${task.completed ? '&#10003;' : ''}
                     </button>
                     <div class="task-content">
                         <div class="task-header">
+                            ${carriedOverBadge}
                             ${subjectBadge}
                             <span class="task-type-badge ${typeClass}">${typeLabel}</span>
                             <span class="task-stars">${starsDisplay}</span>
