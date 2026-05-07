@@ -81,9 +81,10 @@ html, body {
     min-height: 100vh;
     width: 100%;
     max-width: 480px;
-    margin: 0 auto;
+    margin: 0 auto !important;
     box-sizing: border-box;
     padding: 0;
+    position: relative;
 }
 
 /* ============================================
@@ -1258,7 +1259,7 @@ html, body {
 
 /* ============================================
    响应式设计
-   在大屏幕上限制最大宽度，居中显示
+   在大屏幕上添加装饰效果
    ============================================ */
 @media (min-width: 481px) {
     body {
@@ -1266,16 +1267,8 @@ html, body {
     }
 
     .page {
-        max-width: 480px;
-        margin: 0 auto;
         /* 大屏幕上添加边框和阴影，模拟手机屏幕 */
         box-shadow: 0 0 60px rgba(255, 215, 0, 0.05);
-        min-height: 100vh;
-    }
-
-    .tab-bar {
-        left: 50%;
-        transform: translateX(-50%);
     }
 }
 
