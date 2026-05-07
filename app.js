@@ -1077,7 +1077,7 @@ const app = {
 
         // 左滑显示删除按钮（最大80px）
         if (diffX > 0) {
-            const translateX = Math.min(diffX, 80);
+            const translateX = Math.min(diffX * 1.5, 80);
             taskItem.style.transform = `translateX(-${translateX}px)`;
         }
     },
@@ -1092,8 +1092,8 @@ const app = {
         const diffX = this.touchStartX - touchX;
         const taskItem = event.currentTarget;
 
-        // 如果滑动超过40px，显示删除按钮
-        if (diffX > 40) {
+        // 如果滑动超过20px，显示删除按钮
+        if (diffX > 20) {
             taskItem.classList.add('swiped');
             taskItem.style.transform = '';
             this.currentSwipedItem = taskItem;
