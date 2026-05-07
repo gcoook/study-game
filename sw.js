@@ -1,11 +1,12 @@
 // Service Worker - 实现离线功能
-const CACHE_NAME = 'study-game-v1';
+const CACHE_NAME = 'study-game-v2';
 const urlsToCache = [
   '/study-game/',
   '/study-game/index.html',
   '/study-game/style.css',
   '/study-game/app.js',
-  '/study-game/manifest.json'
+  '/study-game/manifest.json',
+  '/study-game/icon.jpg'
 ];
 
 // 安装时缓存资源
