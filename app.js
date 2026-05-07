@@ -41,7 +41,7 @@ const BUFFER_MINUTES = 30;
 const MAX_HISTORY_DAYS = 7;
 
 /** localStorage 存储用的键名 */
-const STORAGE_KEY = 'study_game_data';
+const STORAGE_KEY = 'study_game_user_data_v2';
 
 /** 科目名称映射 */
 const SUBJECT_NAMES = {
@@ -62,29 +62,14 @@ const app = {
 
     // ---------- 用户数据 ----------
     // 所有需要持久化的数据都存在这个对象里
+    // 数据结构改为支持多用户：
+    // users: { username: { password: hash, userData: {...} } }
+    // currentUser: 当前登录的用户名
+    // isLoggedIn: 是否已登录
     data: {
-        nickname: '',           // 用户昵称
-        initialRank: 0,         // 中考初始排名
-        currentRank: 0,         // 当前排名
-        totalXP: 0,             // 累计总经验值
-        streakDays: 0,          // 连胜天数（连续完成至少1个任务的天数）
-        lastActiveDate: '',     // 上次活跃日期（格式：YYYY-MM-DD）
-        todayXP: 0,             // 今日获得的经验值
-        todayCompletedTasks: 0, // 今日完成的任务数
-        tasks: [],              // 任务列表（包含今天和之前的任务）
-        rankHistory: [],        // 排名历史记录（最近7天）
-        isSetup: false,         // 是否已完成初始设置
-        selectedStars: 1,       // 当前选择的星级（1-5）
-        settlementDate: '',     // 上次结算日期
-        selectedSubject: 'chinese', // 当前选中的科目
-        presets: {              // 每个科目的预设任务
-            chinese: ['背诵古诗', '阅读理解', '写作文', '练字'],
-            math: ['做练习题', '整理错题', '背诵公式', '预习新课'],
-            english: ['背单词', '听力练习', '阅读理解', '写作练习'],
-            politics: ['背诵知识点', '整理笔记', '做选择题', '看新闻'],
-            history: ['背诵时间线', '整理事件', '做材料题', '看纪录片'],
-            geo: ['看地图', '背诵地形', '做气候题', '整理笔记']
-        }
+        users: {},           // 所有用户数据 { username: userData }
+        currentUser: null,    // 当前登录用户
+        isLoggedIn: false    // 是否已登录
     },
 
     // ============================================
@@ -94,11 +79,11 @@ const app = {
         // 从 localStorage 加载保存的数据
         this.loadData();
 
-        // 如果用户已经设置过，直接进入主界面
-        if (this.data.isSetup) {
+        // 检查是否已登录，如果已登录则显示主界面
+        if (this.data.isLoggedIn && this.data.currentUser) {
             this.showMainPage();
         } else {
-            // 否则显示设置页面
+            // 否则显示设置页面（登录/注册）
             this.showSetupPage();
         }
 
@@ -178,23 +163,7 @@ const app = {
                 // JSON.parse 把字符串转回对象
                 const parsed = JSON.parse(saved);
                 // 用 Object.assign 把保存的数据合并到 this.data
-                // 这样即使新增了字段也不会丢失
                 Object.assign(this.data, parsed);
-            }
-            // 确保presets有默认值
-            if (!this.data.presets || Object.keys(this.data.presets).length === 0) {
-                this.data.presets = {
-                    chinese: ['背诵古诗', '阅读理解', '写作文', '练字'],
-                    math: ['做练习题', '整理错题', '背诵公式', '预习新课'],
-                    english: ['背单词', '听力练习', '阅读理解', '写作练习'],
-                    politics: ['背诵知识点', '整理笔记', '做选择题', '看新闻'],
-                    history: ['背诵时间线', '整理事件', '做材料题', '看纪录片'],
-                    geo: ['看地图', '背诵地形', '做气候题', '整理笔记']
-                };
-            }
-            // 确保有选中的科目
-            if (!this.data.selectedSubject) {
-                this.data.selectedSubject = 'chinese';
             }
         } catch (e) {
             console.error('加载数据失败:', e);
@@ -206,11 +175,12 @@ const app = {
     // ============================================
 
     /**
-     * 显示设置页面（首次使用）
+     * 显示设置页面（登录/注册页面）
      */
     showSetupPage() {
         document.getElementById('setup-page').style.display = 'flex';
         document.getElementById('main-page').style.display = 'none';
+        this.switchAuthTab('login'); // 默认显示登录
     },
 
     /**
@@ -257,54 +227,251 @@ const app = {
     // ============================================
 
     /**
-     * 用户点击"开始冒险"按钮时调用
-     * 验证输入并初始化数据
+     * 获取当前登录用户的数据
+     * @returns {object|null} 当前用户的数据对象，如果未登录返回null
      */
-    startGame() {
-        const nicknameInput = document.getElementById('nickname-input');
-        const rankInput = document.getElementById('rank-input');
+    getCurrentUserData() {
+        if (!this.data.currentUser) return null;
+        return this.data.users[this.data.currentUser];
+    },
 
-        const nickname = nicknameInput.value.trim();
-        const rank = parseInt(rankInput.value);
+    /**
+     * 切换登录/注册标签页
+     * @param {string} tab - 'login' 或 'register'
+     */
+    switchAuthTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === tab);
+        });
+        document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+        document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('auth-error').style.display = 'none';
+    },
 
-        // 验证昵称不能为空
-        if (!nickname) {
-            this.shakeElement(nicknameInput);
+    /**
+     * 显示登录/注册错误信息
+     * @param {string} message - 错误信息
+     */
+    showAuthError(message) {
+        const errorEl = document.getElementById('auth-error');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+    },
+
+    /**
+     * 注册新账号
+     * @param {Event} event - 表单提交事件
+     */
+    register(event) {
+        event.preventDefault();
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value;
+        const passwordConfirm = document.getElementById('register-password-confirm').value;
+        const rank = parseInt(document.getElementById('register-rank').value);
+
+        // 验证账号长度
+        if (username.length < 2 || username.length > 20) {
+            this.showAuthError('账号需要2-20个字符');
+            return;
+        }
+        // 验证密码长度
+        if (password.length < 4) {
+            this.showAuthError('密码至少4个字符');
+            return;
+        }
+        // 验证两次密码一致
+        if (password !== passwordConfirm) {
+            this.showAuthError('两次密码不一致');
+            return;
+        }
+        // 验证排名
+        if (!rank || rank < 1) {
+            this.showAuthError('请输入有效的排名');
+            return;
+        }
+        // 验证账号是否已存在
+        if (this.data.users[username]) {
+            this.showAuthError('账号已存在');
             return;
         }
 
-        // 验证排名必须是有效数字
-        if (!rank || rank < 1 || rank > TOTAL_STUDENTS) {
-            this.shakeElement(rankInput);
-            return;
-        }
+        // 创建用户（简单密码hash，生产环境需加密）
+        const passwordHash = btoa(password);
 
         // 初始化用户数据
-        this.data.nickname = nickname;
-        this.data.initialRank = rank;
-        this.data.currentRank = rank;
-        this.data.totalXP = 0;
-        this.data.streakDays = 0;
-        this.data.lastActiveDate = this.getTodayStr();
-        this.data.todayXP = 0;
-        this.data.todayCompletedTasks = 0;
-        this.data.tasks = [];
-        this.data.selectedStars = 1;
-        this.data.settlementDate = '';
-        this.data.rankHistory = [
-            {
+        this.data.users[username] = {
+            password: passwordHash,
+            nickname: username,
+            currentRank: rank,
+            totalXP: 0,
+            todayXP: 0,
+            streakDays: 0,
+            lastSettlementDate: null,
+            todayCompletedTasks: 0,
+            rankHistory: [{
                 date: this.getTodayStr(),
                 rank: rank,
                 change: 0
+            }],
+            tasks: [],
+            selectedStars: 1,
+            settlementDate: '',
+            selectedSubject: 'chinese',
+            presets: {
+                chinese: ['背诵古诗', '阅读理解', '写作文', '练字'],
+                math: ['做练习题', '整理错题', '背诵公式', '预习新课'],
+                english: ['背单词', '听力练习', '阅读理解', '写作练习'],
+                politics: ['背诵知识点', '整理笔记', '做选择题', '看新闻'],
+                history: ['背诵时间线', '整理事件', '做材料题', '看纪录片'],
+                geo: ['看地图', '背诵地形', '做气候题', '整理笔记']
             }
-        ];
-        this.data.isSetup = true;
+        };
 
-        // 保存数据
+        // 自动登录
+        this.data.currentUser = username;
+        this.data.isLoggedIn = true;
         this.saveData();
 
-        // 切换到主界面
+        // 跳转到主页
         this.showMainPage();
+    },
+
+    /**
+     * 登录账号
+     * @param {Event} event - 表单提交事件
+     */
+    login(event) {
+        event.preventDefault();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        const user = this.data.users[username];
+        if (!user) {
+            this.showAuthError('账号不存在');
+            return;
+        }
+
+        const passwordHash = btoa(password);
+        if (user.password !== passwordHash) {
+            this.showAuthError('密码错误');
+            return;
+        }
+
+        this.data.currentUser = username;
+        this.data.isLoggedIn = true;
+        this.saveData();
+
+        this.showMainPage();
+    },
+
+    /**
+     * 退出登录
+     */
+    logout() {
+        this.data.currentUser = null;
+        this.data.isLoggedIn = false;
+        this.saveData();
+        this.closeAccountModal();
+        this.showSetupPage();
+    },
+
+    /**
+     * 打开账号管理弹窗
+     */
+    openAccountModal() {
+        document.getElementById('account-username').textContent = this.data.currentUser || '-';
+        document.getElementById('account-modal').style.display = 'flex';
+    },
+
+    /**
+     * 关闭账号管理弹窗
+     */
+    closeAccountModal() {
+        document.getElementById('account-modal').style.display = 'none';
+    },
+
+    /**
+     * 导出当前用户数据
+     */
+    exportData() {
+        const userData = this.getCurrentUserData();
+        if (!userData) {
+            alert('请先登录');
+            return;
+        }
+
+        const exportObj = {
+            version: 1,
+            exportDate: new Date().toISOString(),
+            user: this.data.currentUser,
+            data: userData
+        };
+
+        const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `study_game_backup_${this.data.currentUser}_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        alert('数据已导出');
+    },
+
+    /**
+     * 触发导入数据（点击隐藏的文件input）
+     */
+    importData() {
+        document.getElementById('import-file').click();
+    },
+
+    /**
+     * 处理导入文件
+     * @param {Event} event - 文件选择事件
+     */
+    handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        const self = this;
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (!imported.data || !imported.user) {
+                    throw new Error('无效的数据文件');
+                }
+
+                // 验证导入数据的账号
+                const username = imported.user;
+
+                // 如果账号不存在，创建它
+                if (!self.data.users[username]) {
+                    self.data.users[username] = imported.data;
+                } else {
+                    // 询问是否覆盖
+                    if (!confirm('账号已存在，是否覆盖？')) {
+                        return;
+                    }
+                    self.data.users[username] = imported.data;
+                }
+
+                // 切换到该账号
+                self.data.currentUser = username;
+                self.data.isLoggedIn = true;
+                self.saveData();
+
+                self.closeAccountModal();
+                self.showMainPage();
+                alert('数据导入成功');
+            } catch (err) {
+                alert('导入失败：' + err.message);
+            }
+        };
+        reader.readAsText(file);
+
+        // 清空input以便重复选择同一文件
+        event.target.value = '';
     },
 
     // ============================================
