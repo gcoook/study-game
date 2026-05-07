@@ -1337,7 +1337,7 @@ const app = {
             return;
         }
 
-        const input = document.getElementById('preset-input');
+        const input = document.getElementById('new-preset-input');
         if (!input) return;
 
         const text = input.value.trim();
