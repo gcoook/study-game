@@ -1278,7 +1278,7 @@ const app = {
 
         // 更新弹窗中的科目名称
         const subjectName = SUBJECT_NAMES[userData.selectedSubject] || '其他';
-        const currentSubjectEl = document.getElementById('current-subject-name');
+        const currentSubjectEl = document.getElementById('modal-subject-name');
         if (currentSubjectEl) {
             currentSubjectEl.textContent = subjectName;
         }
@@ -1287,7 +1287,7 @@ const app = {
         this.renderPresetManageList();
 
         // 清空输入框
-        const input = document.getElementById('preset-input');
+        const input = document.getElementById('new-preset-input');
         if (input) input.value = '';
     },
 
