@@ -43,6 +43,16 @@ const MAX_HISTORY_DAYS = 7;
 /** localStorage 存储用的键名 */
 const STORAGE_KEY = 'study_game_data';
 
+/** 科目名称映射 */
+const SUBJECT_NAMES = {
+    chinese: '语文',
+    math: '数学',
+    english: '英语',
+    politics: '政治',
+    history: '历史',
+    geo: '地理'
+};
+
 // ============================================
 // 应用主对象
 // ============================================
@@ -65,7 +75,16 @@ const app = {
         rankHistory: [],        // 排名历史记录（最近7天）
         isSetup: false,         // 是否已完成初始设置
         selectedStars: 1,       // 当前选择的星级（1-5）
-        settlementDate: ''      // 上次结算日期
+        settlementDate: '',     // 上次结算日期
+        selectedSubject: 'chinese', // 当前选中的科目
+        presets: {              // 每个科目的预设任务
+            chinese: ['背诵古诗', '阅读理解', '写作文', '练字'],
+            math: ['做练习题', '整理错题', '背诵公式', '预习新课'],
+            english: ['背单词', '听力练习', '阅读理解', '写作练习'],
+            politics: ['背诵知识点', '整理笔记', '做选择题', '看新闻'],
+            history: ['背诵时间线', '整理事件', '做材料题', '看纪录片'],
+            geo: ['看地图', '背诵地形', '做气候题', '整理笔记']
+        }
     },
 
     // ============================================
@@ -118,6 +137,17 @@ const app = {
 
         // 初始化星级显示
         this.updateStarXPDisplay();
+
+        // 绑定科目选择
+        const subjectBtns = document.querySelectorAll('.subject-btn');
+        subjectBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.selectSubject(btn.dataset.subject);
+            });
+        });
+
+        // 初始化预设任务显示
+        this.renderPresets();
     },
 
     // ============================================
@@ -150,6 +180,21 @@ const app = {
                 // 用 Object.assign 把保存的数据合并到 this.data
                 // 这样即使新增了字段也不会丢失
                 Object.assign(this.data, parsed);
+            }
+            // 确保presets有默认值
+            if (!this.data.presets || Object.keys(this.data.presets).length === 0) {
+                this.data.presets = {
+                    chinese: ['背诵古诗', '阅读理解', '写作文', '练字'],
+                    math: ['做练习题', '整理错题', '背诵公式', '预习新课'],
+                    english: ['背单词', '听力练习', '阅读理解', '写作练习'],
+                    politics: ['背诵知识点', '整理笔记', '做选择题', '看新闻'],
+                    history: ['背诵时间线', '整理事件', '做材料题', '看纪录片'],
+                    geo: ['看地图', '背诵地形', '做气候题', '整理笔记']
+                };
+            }
+            // 确保有选中的科目
+            if (!this.data.selectedSubject) {
+                this.data.selectedSubject = 'chinese';
             }
         } catch (e) {
             console.error('加载数据失败:', e);
@@ -462,6 +507,7 @@ const app = {
             id: Date.now(),                      // 用时间戳作为唯一ID
             text: text,                          // 任务内容
             type: taskType,                      // 任务类型：required必做 / extra拓展
+            subject: this.data.selectedSubject,  // 添加科目
             stars: this.data.selectedStars || 1, // 星级1-5
             completed: false,                    // 是否已完成
             date: this.getTodayStr(),            // 所属日期
@@ -764,6 +810,10 @@ const app = {
             // 星级显示
             const starsDisplay = '\u2605'.repeat(task.stars);
 
+            // 科目标签
+            const subjectName = SUBJECT_NAMES[task.subject] || '其他';
+            const subjectBadge = `<span class="subject-badge">${subjectName}</span>`;
+
             return `
             <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
                 <button class="task-check" onclick="app.toggleTask(${task.id})">
@@ -771,6 +821,7 @@ const app = {
                 </button>
                 <div class="task-content">
                     <div class="task-header">
+                        ${subjectBadge}
                         <span class="task-type-badge ${typeClass}">${typeLabel}</span>
                         <span class="task-stars">${starsDisplay}</span>
                         <span class="task-xp">${task.completed ? '+' + taskXP + ' XP' : taskXP + ' XP'}</span>
@@ -782,6 +833,170 @@ const app = {
                 </button>
             </div>
         `}).join('');
+    },
+
+    // ============================================
+    // 科目选择和预设任务管理
+    // ============================================
+
+    /**
+     * 切换科目
+     * @param {string} subject - 科目代码
+     */
+    selectSubject(subject) {
+        // 更新当前选中的科目
+        this.data.selectedSubject = subject;
+
+        // 更新科目按钮的active状态
+        document.querySelectorAll('.subject-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.subject === subject);
+        });
+
+        // 重新渲染预设任务列表
+        this.renderPresets();
+
+        // 保存数据
+        this.saveData();
+    },
+
+    /**
+     * 渲染预设任务列表
+     */
+    renderPresets() {
+        const presetListEl = document.getElementById('preset-list');
+        if (!presetListEl) return;
+
+        // 获取当前选中科目的预设列表
+        const presets = this.data.presets[this.data.selectedSubject] || [];
+
+        // 生成HTML
+        if (presets.length === 0) {
+            presetListEl.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">暂无预设任务</span>';
+            return;
+        }
+
+        presetListEl.innerHTML = presets.map((preset, index) => `
+            <span class="preset-item" onclick="app.fillPresetToInput('${this.escapeHtml(preset)}')">${this.escapeHtml(preset)}</span>
+        `).join('');
+    },
+
+    /**
+     * 打开预设管理弹窗
+     */
+    openPresetManager() {
+        const modal = document.getElementById('preset-modal');
+        if (!modal) return;
+
+        // 显示弹窗
+        modal.style.display = 'flex';
+
+        // 更新弹窗中的科目名称
+        const subjectName = SUBJECT_NAMES[this.data.selectedSubject] || '其他';
+        const currentSubjectEl = document.getElementById('current-subject-name');
+        if (currentSubjectEl) {
+            currentSubjectEl.textContent = subjectName;
+        }
+
+        // 渲染管理列表
+        this.renderPresetManageList();
+
+        // 清空输入框
+        const input = document.getElementById('preset-input');
+        if (input) input.value = '';
+    },
+
+    /**
+     * 关闭预设管理弹窗
+     */
+    closePresetManager() {
+        const modal = document.getElementById('preset-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    },
+
+    /**
+     * 渲染预设管理列表
+     */
+    renderPresetManageList() {
+        const listEl = document.getElementById('preset-manage-list');
+        if (!listEl) return;
+
+        // 获取当前科目的预设列表
+        const presets = this.data.presets[this.data.selectedSubject] || [];
+
+        if (presets.length === 0) {
+            listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 13px;">暂无预设任务，请添加</div>';
+            return;
+        }
+
+        listEl.innerHTML = presets.map((preset, index) => `
+            <div class="preset-manage-item">
+                <span>${this.escapeHtml(preset)}</span>
+                <button class="btn-delete-preset" onclick="app.deletePreset(${index})">删除</button>
+            </div>
+        `).join('');
+    },
+
+    /**
+     * 添加新预设
+     */
+    addPreset() {
+        const input = document.getElementById('preset-input');
+        if (!input) return;
+
+        const text = input.value.trim();
+        if (!text) {
+            this.shakeElement(input);
+            return;
+        }
+
+        // 添加到当前科目的presets数组
+        if (!this.data.presets[this.data.selectedSubject]) {
+            this.data.presets[this.data.selectedSubject] = [];
+        }
+        this.data.presets[this.data.selectedSubject].push(text);
+
+        // 清空输入框
+        input.value = '';
+
+        // 重新渲染列表
+        this.renderPresetManageList();
+        this.renderPresets();
+
+        // 保存数据
+        this.saveData();
+    },
+
+    /**
+     * 删除预设
+     * @param {number} index - 预设索引
+     */
+    deletePreset(index) {
+        const presets = this.data.presets[this.data.selectedSubject];
+        if (!presets || index < 0 || index >= presets.length) return;
+
+        // 从数组中删除
+        presets.splice(index, 1);
+
+        // 重新渲染列表
+        this.renderPresetManageList();
+        this.renderPresets();
+
+        // 保存数据
+        this.saveData();
+    },
+
+    /**
+     * 填充预设到输入框
+     * @param {string} presetText - 预设文本
+     */
+    fillPresetToInput(presetText) {
+        const input = document.getElementById('task-input');
+        if (input) {
+            input.value = presetText;
+            input.focus();
+        }
     },
 
     // ============================================

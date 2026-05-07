@@ -166,9 +166,9 @@
                     </button>
                 </div>
 
-                <!-- 任务类型和星级选择器 -->
+                <!-- 任务配置区域 -->
                 <div class="task-config-area">
-                    <!-- 类型选择 -->
+                    <!-- 第一行：类型选择 -->
                     <div class="task-type-row">
                         <label class="type-btn required active">
                             <input type="radio" name="task-type" value="required" checked>
@@ -179,7 +179,31 @@
                             &#11088; 拓展
                         </label>
                     </div>
-                    <!-- 星级选择（5颗星，点击选择） -->
+                    
+                    <!-- 第二行：科目选择 -->
+                    <div class="subject-selector">
+                        <div class="subject-row" id="subject-row">
+                            <button class="subject-btn active" data-subject="chinese">语文</button>
+                            <button class="subject-btn" data-subject="math">数学</button>
+                            <button class="subject-btn" data-subject="english">英语</button>
+                            <button class="subject-btn" data-subject="politics">政治</button>
+                            <button class="subject-btn" data-subject="history">历史</button>
+                            <button class="subject-btn" data-subject="geo">地理</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 第三行：预设任务列表 -->
+                    <div class="preset-tasks-area">
+                        <div class="preset-header">
+                            <span class="preset-title">快速选择</span>
+                            <button class="btn-manage-preset" onclick="app.openPresetManager()">管理预设</button>
+                        </div>
+                        <div class="preset-list" id="preset-list">
+                            <!-- JS动态生成预设任务 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 第四行：星级选择 -->
                     <div class="star-selector">
                         <span class="star-label">难度：</span>
                         <div class="stars" id="star-selector">
@@ -190,6 +214,28 @@
                             <span class="star" data-star="5">&#9733;</span>
                         </div>
                         <span class="star-xp" id="star-xp-display">50 XP</span>
+                    </div>
+                </div>
+                
+                <!-- 预设任务管理弹窗 -->
+                <div id="preset-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>管理预设任务</h3>
+                            <button class="btn-close" onclick="app.closePresetManager()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="current-subject-display">
+                                当前科目：<span id="modal-subject-name">语文</span>
+                            </div>
+                            <div class="preset-input-area">
+                                <input type="text" id="new-preset-input" placeholder="输入新的预设任务" maxlength="30">
+                                <button class="btn-add-preset" onclick="app.addPreset()">添加</button>
+                            </div>
+                            <div class="preset-manage-list" id="preset-manage-list">
+                                <!-- JS动态生成管理列表 -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 

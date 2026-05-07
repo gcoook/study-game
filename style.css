@@ -694,6 +694,214 @@ html, body {
     margin-left: auto;
 }
 
+/* 科目选择器 */
+.subject-selector {
+    margin-bottom: var(--spacing-sm);
+}
+
+.subject-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.subject-btn {
+    padding: 6px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all var(--anim-fast);
+}
+
+.subject-btn:hover {
+    border-color: var(--accent-gold);
+    color: var(--text-primary);
+}
+
+.subject-btn.active {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+}
+
+/* 预设任务区域 */
+.preset-tasks-area {
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.preset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.preset-title {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.btn-manage-preset {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--accent-gold);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--anim-fast);
+}
+
+.btn-manage-preset:hover {
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.preset-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.preset-item {
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all var(--anim-fast);
+}
+
+.preset-item:hover {
+    border-color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+/* 弹窗样式 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 90%;
+    max-width: 400px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: var(--spacing-md);
+}
+
+.current-subject-display {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.current-subject-display span {
+    color: var(--accent-gold);
+    font-weight: 600;
+}
+
+.preset-input-area {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.preset-input-area input {
+    flex: 1;
+    padding: 10px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.btn-add-preset {
+    padding: 10px 16px;
+    background: var(--gradient-gold);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #0a0a1a;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.preset-manage-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.preset-manage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
+.preset-manage-item span {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.btn-delete-preset {
+    padding: 4px 10px;
+    background: rgba(255, 68, 68, 0.15);
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--accent-red);
+    font-size: 11px;
+    cursor: pointer;
+}
+
 /* 结算倒计时卡片 */
 .countdown-card {
     display: flex;
@@ -738,6 +946,16 @@ html, body {
     font-size: 12px;
     color: var(--accent-gold);
     letter-spacing: 1px;
+}
+
+/* 任务卡片中的科目标签 */
+.subject-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: rgba(100, 149, 237, 0.2);
+    color: #6495ed;
+    border-radius: 10px;
+    margin-right: 6px;
 }
 
 /* ============================================
