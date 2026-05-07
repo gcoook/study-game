@@ -506,9 +506,12 @@ const app = {
      * 在22:00时自动调用，根据当日XP更新排名或执行掉段
      */
     dailySettlement() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const today = this.getTodayStr();
         // 今天已结算过，跳过
-        if (this.data.settlementDate === today) return;
+        if (userData.settlementDate === today) return;
 
         // 检查当前时间是否已到结算时间（22:00之后）
         const now = new Date();
@@ -516,19 +519,19 @@ const app = {
         settlementTime.setHours(SETTLEMENT_HOUR, 0, 0, 0);
         if (now < settlementTime) return;
 
-        if (this.data.todayCompletedTasks === 0) {
+        if (userData.todayCompletedTasks === 0) {
             // 当天零经验 → 掉段
             this.applyRankDrop();
         } else {
             // 有经验 → 根据当日总XP更新排名
-            this.updateRankByDailyXP(this.data.todayXP);
+            this.updateRankByDailyXP(userData.todayXP);
         }
 
         // 记录排名历史
-        this.addRankHistory(today, this.data.currentRank);
+        this.addRankHistory(today, userData.currentRank);
 
         // 标记今天已结算
-        this.data.settlementDate = today;
+        userData.settlementDate = today;
         this.saveData();
     },
 
@@ -582,11 +585,14 @@ const app = {
      * 执行掉段：排名随机下降20~30名
      */
     applyRankDrop() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         // 生成20到30之间的随机数
         const drop = Math.floor(Math.random() * (RANK_DROP_MAX - RANK_DROP_MIN + 1)) + RANK_DROP_MIN;
         // 排名数字变大 = 排名下降（第1名最好，第50万名最差）
-        this.data.currentRank = Math.min(
-            this.data.currentRank + drop,
+        userData.currentRank = Math.min(
+            userData.currentRank + drop,
             TOTAL_STUDENTS  // 不能超过总人数
         );
     },
@@ -598,10 +604,13 @@ const app = {
      * @param {number} dailyXP - 当日获得的总经验值
      */
     updateRankByDailyXP(dailyXP) {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         if (dailyXP <= 0) return;
-        const ratio = this.data.currentRank / TOTAL_STUDENTS;
+        const ratio = userData.currentRank / TOTAL_STUDENTS;
         const improvement = Math.round(dailyXP * ratio * 0.1);
-        this.data.currentRank = Math.max(1, this.data.currentRank - improvement);
+        userData.currentRank = Math.max(1, userData.currentRank - improvement);
     },
 
     /**
@@ -610,20 +619,23 @@ const app = {
      * @param {number} rank - 当时的排名
      */
     addRankHistory(date, rank) {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         // 计算与上一次记录的排名变化
-        const lastHistory = this.data.rankHistory[this.data.rankHistory.length - 1];
+        const lastHistory = userData.rankHistory[userData.rankHistory.length - 1];
         const change = lastHistory ? rank - lastHistory.rank : 0;
         // 注意：change > 0 表示排名下降（数字变大），change < 0 表示排名上升
 
-        this.data.rankHistory.push({
+        userData.rankHistory.push({
             date: date,
             rank: rank,
             change: change
         });
 
         // 只保留最近7天的记录
-        if (this.data.rankHistory.length > MAX_HISTORY_DAYS) {
-            this.data.rankHistory = this.data.rankHistory.slice(-MAX_HISTORY_DAYS);
+        if (userData.rankHistory.length > MAX_HISTORY_DAYS) {
+            userData.rankHistory = userData.rankHistory.slice(-MAX_HISTORY_DAYS);
         }
     },
 
@@ -655,9 +667,12 @@ const app = {
      * 根据当前选择的类型和星级更新XP显示
      */
     updateStarXPDisplay() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const typeRadio = document.querySelector('input[name="task-type"]:checked');
         const taskType = typeRadio ? typeRadio.value : 'required';
-        const stars = this.data.selectedStars || 1;
+        const stars = userData.selectedStars || 1;
         const xpPerStar = taskType === 'extra' ? XP_PER_STAR_EXTRA : XP_PER_STAR_REQUIRED;
         const totalXP = xpPerStar * stars;
 
@@ -726,14 +741,20 @@ const app = {
      * @param {number} taskId - 任务ID
      */
     toggleTask(taskId) {
+        const userData = this.getCurrentUserData();
+        if (!userData) {
+            alert('请先登录');
+            return;
+        }
+
         // 找到对应的任务
-        const task = this.data.tasks.find(t => t.id === taskId);
+        const task = userData.tasks.find(t => t.id === taskId);
         if (!task) return;
 
         // 如果任务还没完成，现在要完成它
         if (!task.completed) {
             task.completed = true;
-            this.data.todayCompletedTasks++;
+            userData.todayCompletedTasks++;
 
             // 根据任务类型和星级计算基础XP
             const xpPerStar = task.type === 'extra' ? XP_PER_STAR_EXTRA : XP_PER_STAR_REQUIRED;
@@ -749,8 +770,8 @@ const app = {
             }
 
             // 更新经验值（不再实时更新排名）
-            this.data.todayXP += xp;
-            this.data.totalXP += xp;
+            userData.todayXP += xp;
+            userData.totalXP += xp;
 
             // 播放XP飞出动画
             this.showXPAnimation(xp);
@@ -771,11 +792,17 @@ const app = {
      * @param {number} taskId - 任务ID
      */
     deleteTask(taskId) {
+        const userData = this.getCurrentUserData();
+        if (!userData) {
+            alert('请先登录');
+            return;
+        }
+
         // 找到任务索引
-        const index = this.data.tasks.findIndex(t => t.id === taskId);
+        const index = userData.tasks.findIndex(t => t.id === taskId);
         if (index === -1) return;
 
-        const task = this.data.tasks[index];
+        const task = userData.tasks[index];
 
         // 如果任务已完成，需要扣除对应的XP（不再实时更新排名）
         if (task.completed) {
@@ -789,13 +816,13 @@ const app = {
                 xp = Math.round(xp / 2);
             }
 
-            this.data.todayXP = Math.max(0, this.data.todayXP - xp);
-            this.data.totalXP = Math.max(0, this.data.totalXP - xp);
-            this.data.todayCompletedTasks = Math.max(0, this.data.todayCompletedTasks - 1);
+            userData.todayXP = Math.max(0, userData.todayXP - xp);
+            userData.totalXP = Math.max(0, userData.totalXP - xp);
+            userData.todayCompletedTasks = Math.max(0, userData.todayCompletedTasks - 1);
         }
 
         // 从列表中移除
-        this.data.tasks.splice(index, 1);
+        userData.tasks.splice(index, 1);
 
         // 保存数据并刷新界面
         this.saveData();
@@ -813,7 +840,10 @@ const app = {
      * @returns {number} 加成倍率，例如 1.5 表示1.5倍
      */
     getStreakMultiplier() {
-        const multiplier = 1 + this.data.streakDays * STREAK_BONUS_PER_DAY;
+        const userData = this.getCurrentUserData();
+        if (!userData) return 1;
+
+        const multiplier = 1 + userData.streakDays * STREAK_BONUS_PER_DAY;
         return Math.min(multiplier, MAX_STREAK_MULTIPLIER);
     },
 
@@ -951,10 +981,13 @@ const app = {
      * 更新加成卡片显示
      */
     updateBonusCard() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const multiplier = this.getStreakMultiplier();
         const bonusPercent = Math.round((multiplier - 1) * 100);
         const desc = bonusPercent > 0
-            ? `连胜${this.data.streakDays}天，加成 x${multiplier.toFixed(1)}（+${bonusPercent}%）`
+            ? `连胜${userData.streakDays}天，加成 x${multiplier.toFixed(1)}（+${bonusPercent}%）`
             : '完成今日任务即可开启连胜加成！';
 
         const bonusDescEl = document.getElementById('bonus-desc');
@@ -967,13 +1000,16 @@ const app = {
      * 渲染首页待办清单
      */
     renderTodoList() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const todoListEl = document.getElementById('todo-list');
         const todoEmptyEl = document.getElementById('todo-empty');
         const todoCountEl = document.getElementById('todo-count');
         const today = this.getTodayStr();
 
         // 获取今日未完成的任务
-        const undoneTasks = this.data.tasks.filter(t => t.date === today && !t.completed);
+        const undoneTasks = userData.tasks.filter(t => t.date === today && !t.completed);
 
         // 更新任务数量显示
         if (todoCountEl) {
@@ -1022,12 +1058,15 @@ const app = {
      * 渲染任务列表
      */
     renderTaskList() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const listEl = document.getElementById('task-list');
         const emptyEl = document.getElementById('empty-tasks');
         const today = this.getTodayStr();
 
         // 获取今天的任务
-        const todayTasks = this.data.tasks.filter(t => t.date === today);
+        const todayTasks = userData.tasks.filter(t => t.date === today);
 
         // 更新任务统计
         const doneCount = todayTasks.filter(t => t.completed).length;
@@ -1124,11 +1163,14 @@ const app = {
      * 渲染预设任务列表
      */
     renderPresets() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const presetListEl = document.getElementById('preset-list');
         if (!presetListEl) return;
 
         // 获取当前选中科目的预设列表
-        const presets = this.data.presets[this.data.selectedSubject] || [];
+        const presets = userData.presets[userData.selectedSubject] || [];
 
         // 生成HTML
         if (presets.length === 0) {
@@ -1145,6 +1187,9 @@ const app = {
      * 打开预设管理弹窗
      */
     openPresetManager() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const modal = document.getElementById('preset-modal');
         if (!modal) return;
 
@@ -1152,7 +1197,7 @@ const app = {
         modal.style.display = 'flex';
 
         // 更新弹窗中的科目名称
-        const subjectName = SUBJECT_NAMES[this.data.selectedSubject] || '其他';
+        const subjectName = SUBJECT_NAMES[userData.selectedSubject] || '其他';
         const currentSubjectEl = document.getElementById('current-subject-name');
         if (currentSubjectEl) {
             currentSubjectEl.textContent = subjectName;
@@ -1180,11 +1225,14 @@ const app = {
      * 渲染预设管理列表
      */
     renderPresetManageList() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const listEl = document.getElementById('preset-manage-list');
         if (!listEl) return;
 
         // 获取当前科目的预设列表
-        const presets = this.data.presets[this.data.selectedSubject] || [];
+        const presets = userData.presets[userData.selectedSubject] || [];
 
         if (presets.length === 0) {
             listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 13px;">暂无预设任务，请添加</div>';
@@ -1203,6 +1251,12 @@ const app = {
      * 添加新预设
      */
     addPreset() {
+        const userData = this.getCurrentUserData();
+        if (!userData) {
+            alert('请先登录');
+            return;
+        }
+
         const input = document.getElementById('preset-input');
         if (!input) return;
 
@@ -1213,10 +1267,10 @@ const app = {
         }
 
         // 添加到当前科目的presets数组
-        if (!this.data.presets[this.data.selectedSubject]) {
-            this.data.presets[this.data.selectedSubject] = [];
+        if (!userData.presets[userData.selectedSubject]) {
+            userData.presets[userData.selectedSubject] = [];
         }
-        this.data.presets[this.data.selectedSubject].push(text);
+        userData.presets[userData.selectedSubject].push(text);
 
         // 清空输入框
         input.value = '';
@@ -1234,7 +1288,13 @@ const app = {
      * @param {number} index - 预设索引
      */
     deletePreset(index) {
-        const presets = this.data.presets[this.data.selectedSubject];
+        const userData = this.getCurrentUserData();
+        if (!userData) {
+            alert('请先登录');
+            return;
+        }
+
+        const presets = userData.presets[userData.selectedSubject];
         if (!presets || index < 0 || index >= presets.length) return;
 
         // 从数组中删除
@@ -1332,8 +1392,11 @@ const app = {
      * 渲染首页的排名趋势折线图（SVG）
      */
     renderHomeTrendChart() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const container = document.getElementById('home-trend-chart');
-        const history = this.data.rankHistory;
+        const history = userData.rankHistory;
 
         // 如果没有足够的历史数据，显示提示
         if (history.length < 2) {
@@ -1412,8 +1475,11 @@ const app = {
      * 渲染排行页的柱状图
      */
     renderRankingChart() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const container = document.getElementById('ranking-chart');
-        const history = this.data.rankHistory;
+        const history = userData.rankHistory;
 
         if (history.length === 0) {
             container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;">暂无数据</div>';
@@ -1455,8 +1521,11 @@ const app = {
      * 渲染排行页的详细数据列表
      */
     renderRankingDetail() {
+        const userData = this.getCurrentUserData();
+        if (!userData) return;
+
         const container = document.getElementById('ranking-detail-list');
-        const history = [...this.data.rankHistory].reverse(); // 最新的在前面
+        const history = [...userData.rankHistory].reverse(); // 最新的在前面
 
         if (history.length === 0) {
             container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:13px;">暂无数据</div>';
