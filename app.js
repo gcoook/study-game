@@ -670,9 +670,6 @@ const app = {
     },
 
     /**
-     * 执行掉段：排名随机下降20~30名
-     */
-    /**
      * 根据当日总XP计算排名提升（每日结算时调用）
      * 公式：排名提升量 = 当日总XP × (当前排名 / 总人数) × 0.1
      * 排名越高（数字越小），相同XP提升越少
@@ -1011,8 +1008,11 @@ const app = {
     updateHeader() {
         const userData = this.getCurrentUserData();
         if (!userData) return;
-        document.getElementById('header-nickname').textContent = userData.nickname;
-        document.getElementById('header-streak-num').textContent = userData.streakDays;
+        
+        const nicknameEl = document.getElementById('header-nickname');
+        const streakEl = document.getElementById('header-streak-num');
+        if (nicknameEl) nicknameEl.textContent = userData.nickname;
+        if (streakEl) streakEl.textContent = userData.streakDays;
     },
 
     /**
