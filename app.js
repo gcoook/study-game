@@ -687,6 +687,7 @@ const app = {
         this.updateBonusCard();
         this.renderTaskList();
         this.updateCountdown();
+        this.renderTodoList();
     },
 
     /**
@@ -756,6 +757,51 @@ const app = {
             : '完成今日任务即可开启连胜加成！';
 
         document.getElementById('bonus-desc').textContent = desc;
+    },
+
+    /**
+     * 渲染首页待办清单
+     */
+    renderTodoList() {
+        const todoListEl = document.getElementById('todo-list');
+        const todoEmptyEl = document.getElementById('todo-empty');
+        const today = this.getTodayStr();
+
+        // 获取今日未完成的任务
+        const undoneTasks = this.data.tasks.filter(t => t.date === today && !t.completed);
+
+        // 如果没有未做任务，显示空状态
+        if (undoneTasks.length === 0) {
+            todoListEl.style.display = 'none';
+            todoEmptyEl.style.display = 'block';
+            return;
+        }
+
+        // 显示列表，隐藏空状态
+        todoListEl.style.display = 'flex';
+        todoEmptyEl.style.display = 'none';
+
+        // 获取加成倍率用于计算XP
+        const multiplier = this.getStreakMultiplier();
+
+        // 生成待办列表HTML
+        todoListEl.innerHTML = undoneTasks.map(task => {
+            const baseXP = task.type === 'extra' ? XP_PER_STAR_EXTRA : XP_PER_STAR_REQUIRED;
+            const taskXP = Math.round(baseXP * task.stars * multiplier);
+            const subjectName = SUBJECT_NAMES[task.subject] || '其他';
+            const typeLabel = task.type === 'extra' ? '⭐' : '📝';
+
+            return `
+                <div class="todo-item" data-id="${task.id}">
+                    <div class="todo-checkbox" onclick="app.toggleTask(${task.id})"></div>
+                    <div class="todo-content">
+                        <div class="todo-text">${this.escapeHtml(task.text)}</div>
+                        <div class="todo-meta">${typeLabel} ${subjectName} ${'★'.repeat(task.stars)}</div>
+                    </div>
+                    <div class="todo-xp">+${taskXP} XP</div>
+                </div>
+            `;
+        }).join('');
     },
 
     // ============================================
