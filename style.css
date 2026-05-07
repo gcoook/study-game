@@ -1846,6 +1846,14 @@ html, body {
     padding: var(--spacing-lg) 0 var(--spacing-xl);
 }
 
+.setup-version {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: var(--spacing-lg) 0;
+    margin-top: var(--spacing-md);
+}
+
 /* 柱状图从下往上生长 */
 @keyframes growUp {
     from {
