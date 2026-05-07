@@ -27,14 +27,17 @@ const XP_PER_STAR_EXTRA = 100;
 const STREAK_BONUS_PER_DAY = 0.1;
 const MAX_STREAK_MULTIPLIER = 3.0;
 
-/** 掉段机制：当天零经验，排名随机下降20~30名 */
-const RANK_DROP_MIN = 20;
-const RANK_DROP_MAX = 30;
+/** 基准掉段机制：每少完成1个达标任务，掉5名 */
+const RANK_DROP_PER_MISS = 5;
+
+/** 每日达标任务数 */
+const DAILY_TARGET_WEEKDAY = 2;  // 周一到周五
+const DAILY_TARGET_WEEKEND = 5;  // 周末（周六日）
 
 /** 每日结算时间（22:00） */
 const SETTLEMENT_HOUR = 22;
 
-/** 缓冲期时长（30分钟，即22:00-22:30） */
+/** 缓冲期时长（30分钟，即22:00-22:30）- 仅周末有效 */
 const BUFFER_MINUTES = 30;
 
 /** 排名历史最多保存的天数 */
@@ -543,13 +546,34 @@ const app = {
     /**
      * 检查当前是否在缓冲期内（22:00-22:30）
      * 缓冲期内完成的任务XP减半
+     * 注意：周一到周五无缓冲期，只有周末有
      * @returns {boolean} 是否在缓冲期内
      */
     isBufferPeriod() {
         const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=周日, 1-5=周一到周五, 6=周六
+        
+        // 周一到周五无缓冲期
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            return false;
+        }
+        
+        // 周末有缓冲期
         const hour = now.getHours();
         const minute = now.getMinutes();
         return hour === SETTLEMENT_HOUR && minute < BUFFER_MINUTES;
+    },
+
+    /**
+     * 获取今日达标任务数
+     * 周一到周五：2个
+     * 周末：5个
+     * @returns {number} 达标任务数
+     */
+    getDailyTarget() {
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=周日, 1-5=周一到周五, 6=周六
+        return (dayOfWeek === 0 || dayOfWeek === 6) ? DAILY_TARGET_WEEKEND : DAILY_TARGET_WEEKDAY;
     },
 
     /**
@@ -564,17 +588,30 @@ const app = {
         // 今天已结算过，跳过
         if (userData.settlementDate === today) return;
 
-        // 检查当前时间是否已到结算时间（22:00之后）
+        // 检查当前时间是否已到结算时间
         const now = new Date();
+        const dayOfWeek = now.getDay();
+        
+        // 周一到周五：22:30截止
+        // 周末：22:00截止（有缓冲期到22:30）
+        const settlementHour = (dayOfWeek >= 1 && dayOfWeek <= 5) ? SETTLEMENT_HOUR + 0.5 : SETTLEMENT_HOUR;
         const settlementTime = new Date();
-        settlementTime.setHours(SETTLEMENT_HOUR, 0, 0, 0);
+        settlementTime.setHours(Math.floor(settlementHour), (settlementHour % 1) * 60, 0, 0);
         if (now < settlementTime) return;
 
-        if (userData.todayCompletedTasks === 0) {
-            // 当天零经验 → 掉段
-            this.applyRankDrop();
-        } else {
-            // 有经验 → 根据当日总XP更新排名
+        // 计算达标情况
+        const dailyTarget = this.getDailyTarget();
+        const completed = userData.todayCompletedTasks || 0;
+        const missed = Math.max(0, dailyTarget - completed);
+
+        if (missed > 0) {
+            // 少完成任务 → 掉段
+            const dropAmount = missed * RANK_DROP_PER_MISS;
+            userData.currentRank = Math.min(userData.currentRank + dropAmount, TOTAL_STUDENTS);
+        }
+        
+        // 有完成任务 → 根据当日总XP更新排名
+        if (userData.todayXP > 0) {
             this.updateRankByDailyXP(userData.todayXP);
         }
 
@@ -635,19 +672,6 @@ const app = {
     /**
      * 执行掉段：排名随机下降20~30名
      */
-    applyRankDrop() {
-        const userData = this.getCurrentUserData();
-        if (!userData) return;
-
-        // 生成20到30之间的随机数
-        const drop = Math.floor(Math.random() * (RANK_DROP_MAX - RANK_DROP_MIN + 1)) + RANK_DROP_MIN;
-        // 排名数字变大 = 排名下降（第1名最好，第50万名最差）
-        userData.currentRank = Math.min(
-            userData.currentRank + drop,
-            TOTAL_STUDENTS  // 不能超过总人数
-        );
-    },
-
     /**
      * 根据当日总XP计算排名提升（每日结算时调用）
      * 公式：排名提升量 = 当日总XP × (当前排名 / 总人数) × 0.1
@@ -1017,14 +1041,19 @@ const app = {
             todayXPEl.textContent = this.formatNumber(userData.todayXP);
         }
 
-        const totalXPEl = document.getElementById('total-xp');
-        if (totalXPEl) {
-            totalXPEl.textContent = this.formatNumber(userData.totalXP);
-        }
-
         const streakEl = document.getElementById('streak-days');
         if (streakEl) {
             streakEl.textContent = userData.streakDays;
+        }
+
+        // 今日目标
+        const dailyTargetEl = document.getElementById('daily-target');
+        if (dailyTargetEl) {
+            const target = this.getDailyTarget();
+            const completed = userData.todayCompletedTasks || 0;
+            dailyTargetEl.textContent = `${completed}/${target}`;
+            // 达标变绿，未达标变红
+            dailyTargetEl.style.color = completed >= target ? 'var(--accent-green)' : 'var(--accent-red)';
         }
     },
 
