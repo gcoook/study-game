@@ -70,6 +70,9 @@ body {
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none;
     user-select: none;
+    /* 强制内容居中 */
+    display: flex;
+    justify-content: center;
 }
 
 /* ---------- 页面容器 ---------- */
