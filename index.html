@@ -85,9 +85,9 @@
             <form class="setup-form" id="import-form" style="display: none;">
                 <div class="form-group">
                     <label>导入备份数据</label>
-                    <p class="form-hint">选择之前导出的JSON文件，将自动创建账号并导入数据</p>
-                    <button type="button" class="btn-primary" onclick="app.importFromLogin()">选择文件导入</button>
-                    <input type="file" id="login-import-file" accept=".json" style="display: none;" onchange="app.handleLoginImportFile(event)">
+                    <p class="form-hint">将之前导出复制的数据粘贴到下方，点击导入即可</p>
+                    <textarea id="login-import-text" placeholder="在此粘贴备份数据..." rows="4" style="width:100%;padding:10px;background:var(--bg-tertiary);border:1px solid rgba(255,215,0,0.1);border-radius:var(--radius-sm);color:var(--text-primary);font-size:13px;resize:vertical;"></textarea>
+                    <button type="button" class="btn-primary" onclick="app.importFromLogin()">导入</button>
                 </div>
             </form>
 

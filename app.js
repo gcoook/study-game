@@ -508,23 +508,16 @@ const app = {
      * 登录页导入（临时功能）
      */
     importFromLogin() {
-        document.getElementById('login-import-file').click();
-    },
+        const textarea = document.getElementById('login-import-text');
+        if (!textarea) return;
 
-    /**
-     * 处理登录页导入文件
-     */
-    handleLoginImportFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        const text = textarea.value.trim();
+        if (!text) {
+            alert('请先粘贴备份数据');
+            return;
+        }
 
-        const reader = new FileReader();
-        const self = this;
-        reader.onload = function(e) {
-            self.processImportData(e.target.result);
-        };
-        reader.readAsText(file);
-        event.target.value = '';
+        this.processImportData(text);
     },
 
     /**
